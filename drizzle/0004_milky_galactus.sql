@@ -1,0 +1,2 @@
+ALTER TABLE "meow-weight-tracker_eating_history" ALTER COLUMN "Quantity" SET DATA TYPE integer;--> statement-breakpoint
+ALTER TABLE "meow-weight-tracker_weight_history" ALTER COLUMN "Weight" SET DATA TYPE double precision;

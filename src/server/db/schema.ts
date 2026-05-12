@@ -5,6 +5,7 @@ import {
     serial,
     timestamp,
     varchar,
+    doublePrecision
 } from "drizzle-orm/pg-core";
 
 /**
@@ -33,7 +34,7 @@ export const WeightHistory = createTable(
         PetID: integer('PetID').references(() => Pets.PetID),
         CreatedUTC: timestamp("CreationTime"),
         WeightedUTC: timestamp("WeightTime"),
-        Weight: decimal('Weight'),
+        Weight: doublePrecision('Weight'),
     },
     (weight_history) => ({
         petIndex: index('weight_history_pet_index').on(weight_history.PetID),
@@ -103,7 +104,7 @@ export const EatingHistory = createTable(
         CreatedAtUTC: timestamp("CreationTime"),
         FedAtUTC: timestamp("FeedingTime"),
         FoodID: integer("FoodID").references(() => PetFood.FoodID), // Link to PetFood table
-        Quantity: decimal('Quantity'),
+        Quantity: integer('Quantity'), //in grams
     },
     (eating_history) => ({
         petIndex: index('eating_history_pet_index').on(eating_history.PetID),
