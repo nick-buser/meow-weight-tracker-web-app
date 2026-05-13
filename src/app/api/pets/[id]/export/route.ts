@@ -1,22 +1,10 @@
 import { auth } from "@clerk/nextjs/server";
 import { asc, eq } from "drizzle-orm";
 
+import { toCsv } from "~/lib/csv";
 import { db } from "~/server/db";
 import { eatingHistory, petFood, weightHistory } from "~/server/db/schema";
 import { assertPetAccess } from "~/server/api/petAccess";
-
-function csvEscape(value: unknown): string {
-    if (value === null || value === undefined) return "";
-    const s = String(value);
-    if (s.includes(",") || s.includes('"') || s.includes("\n")) {
-        return `"${s.replace(/"/g, '""')}"`;
-    }
-    return s;
-}
-
-function toCsv(rows: ReadonlyArray<ReadonlyArray<unknown>>): string {
-    return rows.map((r) => r.map(csvEscape).join(",")).join("\n") + "\n";
-}
 
 export async function GET(
     req: Request,
