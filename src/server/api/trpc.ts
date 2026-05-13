@@ -12,7 +12,6 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
-import { Users } from "~/server/db/schema";
 
 /**
  * 1. CONTEXT
@@ -70,40 +69,21 @@ export const createCallerFactory = t.createCallerFactory;
  * "/src/server/api/routers" directory.
  */
 
-/**
- * This is how you create new routers and sub-routers in your tRPC API.
- *
- * @see https://trpc.io/docs/router
- */
 export const createTRPCRouter = t.router;
 
-/**
- * Public (unauthenticated) procedure
- *
- * This is the base piece you use to build new queries and mutations on your tRPC API. It does not
- * guarantee that a user querying is authorized, but you can still access user session data if they
- * are logged in.
- */
 export const publicProcedure = t.procedure;
 
 /**
  * Protected (authenticated) procedure.
  *
- * Requires a signed-in Clerk user. Lazily upserts the user into our `Users` table on first call so
- * downstream foreign keys (e.g. `PetPeople.UserID`) are always valid without needing a separate
- * Clerk webhook.
+ * Requires a signed-in Clerk user. The `users` row is populated by the Clerk
+ * webhook at /api/clerk/webhook on user.created — there is no lazy upsert
+ * here anymore.
  */
 const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
   if (!ctx.userId) {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
-
-  const now = new Date();
-  await ctx.db
-    .insert(Users)
-    .values({ UserID: ctx.userId, CreatedAt: now, UpdatedAt: now })
-    .onConflictDoNothing();
-
   return next({ ctx: { ...ctx, userId: ctx.userId } });
 });
 

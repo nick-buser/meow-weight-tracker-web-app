@@ -1,112 +1,115 @@
 import {
-    date, decimal,
-    index, integer, pgEnum,
-    pgTableCreator, primaryKey,
+    date,
+    index,
+    integer,
+    pgEnum,
+    pgTableCreator,
+    primaryKey,
+    real,
     serial,
     timestamp,
     varchar,
-    doublePrecision
 } from "drizzle-orm/pg-core";
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
-export const createTable = pgTableCreator((name) => `meow-weight-tracker_${name}`);
-
-export const Pets = createTable(
-    "pets",
-    {
-        PetID: serial("PetID").primaryKey(),
-        Species: varchar('Species'),
-        Gender: varchar('Gender'),
-        Name: varchar('Name'),
-        Age: integer('Age'),
-    }
+export const createTable = pgTableCreator(
+    (name) => `meow-weight-tracker_${name}`,
 );
 
-export const WeightHistory = createTable(
-    "weight_history",
-    {
-        RecordID: serial('RecordID').primaryKey(),
-        PetID: integer('PetID').references(() => Pets.PetID),
-        CreatedUTC: timestamp("CreationTime"),
-        WeightedUTC: timestamp("WeightTime"),
-        Weight: doublePrecision('Weight'),
-    },
-    (weight_history) => ({
-        petIndex: index('weight_history_pet_index').on(weight_history.PetID),
-    })
-);
+const timestamps = {
+    createdAt: timestamp("created_at", { withTimezone: true })
+        .defaultNow()
+        .notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+        .defaultNow()
+        .notNull(),
+};
 
-export const Users = createTable(
-    "users",
-    {
-        UserID: varchar('UserID', {length: 256}).primaryKey(),
-        CreatedAt: timestamp("CreationTime"),
-        UpdatedAt: timestamp('UpdatedTime')
-    },
-    (users) => ({
-        userIndex : index('user_id_index').on(users.UserID),
-    })
-)
+export const users = createTable("users", {
+    // Clerk user ID (e.g. user_2abc...). FK target for petPeople.userId.
+    id: varchar("id", { length: 256 }).primaryKey(),
+    ...timestamps,
+});
 
-export const RoleEnum = pgEnum('Role', [
-    'Owner',
-    'Editor',
-    'Viewer'
-])
+export const pets = createTable("pets", {
+    id: serial("id").primaryKey(),
+    species: varchar("species", { length: 64 }).notNull(),
+    gender: varchar("gender", { length: 16 }).notNull(),
+    name: varchar("name", { length: 128 }).notNull(),
+    birthDate: date("birth_date"),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    ...timestamps,
+});
 
-export const PetPeople = createTable(
+export const roleEnum = pgEnum("pet_role", ["Owner", "Editor", "Viewer"]);
+
+export const petPeople = createTable(
     "pet_people",
     {
-        UserID: varchar('UserID').references(() => Users.UserID),
-        PetID: integer('PetID').references(() => Pets.PetID),
-        CreatedAt: timestamp("CreationTime"),
-        UpdatedAt: timestamp('UpdatedTime'),
-        Role: RoleEnum('Role')
+        userId: varchar("user_id", { length: 256 })
+            .references(() => users.id)
+            .notNull(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        role: roleEnum("role").notNull(),
+        ...timestamps,
     },
-    (petPeople) => ({
-        userIndex: index('pet_people_user_id_index').on(petPeople.UserID),
-        petIndex: index('pet_people_pet_id_index').on(petPeople.PetID),
-        pk: primaryKey({ columns: [petPeople.UserID, petPeople.PetID]})
-    })
-)
+    (table) => ({
+        pk: primaryKey({ columns: [table.userId, table.petId] }),
+        userIdx: index("pet_people_user_id_idx").on(table.userId),
+        petIdx: index("pet_people_pet_id_idx").on(table.petId),
+    }),
+);
 
-export const PetFood = createTable(
+export const weightHistory = createTable(
+    "weight_history",
+    {
+        id: serial("id").primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        weighedAt: timestamp("weighed_at", { withTimezone: true }).notNull(),
+        weight: real("weight").notNull(),
+        ...timestamps,
+    },
+    (table) => ({
+        petIdx: index("weight_history_pet_id_idx").on(table.petId),
+    }),
+);
+
+export const petFood = createTable(
     "pet_food",
     {
-        FoodID: serial("FoodID").primaryKey(),
-        Name: varchar("Name", { length: 256 }),
-        Brand: varchar("Brand", { length: 256 }),
-        CaloriesPerGram: decimal("CaloriesPerGram"),
-        CaloriesPerLiter: decimal("CaloriesPerLiter"),
-        ProteinPercent: decimal("ProteinPercent"), // Optional macro
-        FatPercent: decimal("FatPercent"), // Optional macro
-        CarbsPercent: decimal("CarbsPercent"), // Optional macro
-        Notes: varchar("Notes", { length: 1024 }), // Any other useful information
-        CreatedAtUTC: timestamp("CreatedTime"),
-        UpdatedAtUTC: timestamp("UpdatedTime"),
+        id: serial("id").primaryKey(),
+        name: varchar("name", { length: 256 }).notNull(),
+        brand: varchar("brand", { length: 256 }),
+        caloriesPerGram: real("calories_per_gram").notNull(),
+        proteinPercent: real("protein_percent"),
+        fatPercent: real("fat_percent"),
+        carbsPercent: real("carbs_percent"),
+        notes: varchar("notes", { length: 1024 }),
+        ...timestamps,
     },
-    (petFood) => ({
-        foodIndex: index("pet_food_name_index").on(petFood.Name), // Index for fast lookup by name
-    })
-)
+    (table) => ({
+        nameIdx: index("pet_food_name_idx").on(table.name),
+    }),
+);
 
-export const EatingHistory = createTable(
+export const eatingHistory = createTable(
     "eating_history",
     {
-        EntryID: serial("EntryID").primaryKey(),
-        PetID: integer('PetID').references(() => Pets.PetID),
-        Date: date('Date'),
-        CreatedAtUTC: timestamp("CreationTime"),
-        FedAtUTC: timestamp("FeedingTime"),
-        FoodID: integer("FoodID").references(() => PetFood.FoodID), // Link to PetFood table
-        Quantity: integer('Quantity'), //in grams
+        id: serial("id").primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        foodId: integer("food_id")
+            .references(() => petFood.id)
+            .notNull(),
+        fedAt: timestamp("fed_at", { withTimezone: true }).notNull(),
+        quantityGrams: integer("quantity_grams").notNull(),
+        ...timestamps,
     },
-    (eating_history) => ({
-        petIndex: index('eating_history_pet_index').on(eating_history.PetID),
-    })
+    (table) => ({
+        petIdx: index("eating_history_pet_id_idx").on(table.petId),
+    }),
 );

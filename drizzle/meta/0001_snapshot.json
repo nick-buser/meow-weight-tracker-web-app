@@ -1,6 +1,6 @@
 {
-  "id": "9cdd8daa-affa-406a-85bc-0db2677e13cb",
-  "prevId": "4c7fa482-f988-4e34-8754-688c91b8ca1a",
+  "id": "a5c4fa2d-ce28-401f-bea9-272cf6f14bb1",
+  "prevId": "9d3c8a52-aedd-4ca7-bf24-e8d8dedc2b59",
   "version": "6",
   "dialect": "postgresql",
   "tables": {
@@ -8,81 +8,83 @@
       "name": "meow-weight-tracker_eating_history",
       "schema": "",
       "columns": {
-        "EntryID": {
-          "name": "EntryID",
+        "id": {
+          "name": "id",
           "type": "serial",
           "primaryKey": true,
           "notNull": true
         },
-        "PetID": {
-          "name": "PetID",
+        "pet_id": {
+          "name": "pet_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "Date": {
-          "name": "Date",
-          "type": "date",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "CreationTime": {
-          "name": "CreationTime",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "FeedingTime": {
-          "name": "FeedingTime",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "FoodID": {
-          "name": "FoodID",
+        "food_id": {
+          "name": "food_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "Quantity": {
-          "name": "Quantity",
-          "type": "numeric",
+        "fed_at": {
+          "name": "fed_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "quantity_grams": {
+          "name": "quantity_grams",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {
-        "eating_history_pet_index": {
-          "name": "eating_history_pet_index",
+        "eating_history_pet_id_idx": {
+          "name": "eating_history_pet_id_idx",
           "columns": [
-            "PetID"
+            "pet_id"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "meow-weight-tracker_eating_history_PetID_meow-weight-tracker_pets_PetID_fk": {
-          "name": "meow-weight-tracker_eating_history_PetID_meow-weight-tracker_pets_PetID_fk",
+        "meow-weight-tracker_eating_history_pet_id_meow-weight-tracker_pets_id_fk": {
+          "name": "meow-weight-tracker_eating_history_pet_id_meow-weight-tracker_pets_id_fk",
           "tableFrom": "meow-weight-tracker_eating_history",
           "tableTo": "meow-weight-tracker_pets",
           "columnsFrom": [
-            "PetID"
+            "pet_id"
           ],
           "columnsTo": [
-            "PetID"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "meow-weight-tracker_eating_history_FoodID_meow-weight-tracker_pet_food_FoodID_fk": {
-          "name": "meow-weight-tracker_eating_history_FoodID_meow-weight-tracker_pet_food_FoodID_fk",
+        "meow-weight-tracker_eating_history_food_id_meow-weight-tracker_pet_food_id_fk": {
+          "name": "meow-weight-tracker_eating_history_food_id_meow-weight-tracker_pet_food_id_fk",
           "tableFrom": "meow-weight-tracker_eating_history",
           "tableTo": "meow-weight-tracker_pet_food",
           "columnsFrom": [
-            "FoodID"
+            "food_id"
           ],
           "columnsTo": [
-            "FoodID"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -95,78 +97,74 @@
       "name": "meow-weight-tracker_pet_food",
       "schema": "",
       "columns": {
-        "FoodID": {
-          "name": "FoodID",
+        "id": {
+          "name": "id",
           "type": "serial",
           "primaryKey": true,
           "notNull": true
         },
-        "Name": {
-          "name": "Name",
+        "name": {
+          "name": "name",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "brand": {
+          "name": "brand",
           "type": "varchar(256)",
           "primaryKey": false,
           "notNull": false
         },
-        "Brand": {
-          "name": "Brand",
-          "type": "varchar(256)",
+        "calories_per_gram": {
+          "name": "calories_per_gram",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "protein_percent": {
+          "name": "protein_percent",
+          "type": "real",
           "primaryKey": false,
           "notNull": false
         },
-        "CaloriesPerGram": {
-          "name": "CaloriesPerGram",
-          "type": "numeric",
+        "fat_percent": {
+          "name": "fat_percent",
+          "type": "real",
           "primaryKey": false,
           "notNull": false
         },
-        "CaloriesPerLiter": {
-          "name": "CaloriesPerLiter",
-          "type": "numeric",
+        "carbs_percent": {
+          "name": "carbs_percent",
+          "type": "real",
           "primaryKey": false,
           "notNull": false
         },
-        "ProteinPercent": {
-          "name": "ProteinPercent",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "FatPercent": {
-          "name": "FatPercent",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "CarbsPercent": {
-          "name": "CarbsPercent",
-          "type": "numeric",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "Notes": {
-          "name": "Notes",
+        "notes": {
+          "name": "notes",
           "type": "varchar(1024)",
           "primaryKey": false,
           "notNull": false
         },
-        "CreatedTime": {
-          "name": "CreatedTime",
-          "type": "timestamp",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         },
-        "UpdatedTime": {
-          "name": "UpdatedTime",
-          "type": "timestamp",
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {
-        "pet_food_name_index": {
-          "name": "pet_food_name_index",
+        "pet_food_name_idx": {
+          "name": "pet_food_name_idx",
           "columns": [
-            "Name"
+            "name"
           ],
           "isUnique": false
         }
@@ -179,88 +177,90 @@
       "name": "meow-weight-tracker_pet_people",
       "schema": "",
       "columns": {
-        "UserID": {
-          "name": "UserID",
-          "type": "varchar",
+        "user_id": {
+          "name": "user_id",
+          "type": "varchar(256)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "PetID": {
-          "name": "PetID",
+        "pet_id": {
+          "name": "pet_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "CreationTime": {
-          "name": "CreationTime",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "UpdatedTime": {
-          "name": "UpdatedTime",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "Role": {
-          "name": "Role",
-          "type": "Role",
+        "role": {
+          "name": "role",
+          "type": "pet_role",
           "typeSchema": "public",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {
-        "pet_people_user_id_index": {
-          "name": "pet_people_user_id_index",
+        "pet_people_user_id_idx": {
+          "name": "pet_people_user_id_idx",
           "columns": [
-            "UserID"
+            "user_id"
           ],
           "isUnique": false
         },
-        "pet_people_pet_id_index": {
-          "name": "pet_people_pet_id_index",
+        "pet_people_pet_id_idx": {
+          "name": "pet_people_pet_id_idx",
           "columns": [
-            "PetID"
+            "pet_id"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "meow-weight-tracker_pet_people_UserID_meow-weight-tracker_users_UserID_fk": {
-          "name": "meow-weight-tracker_pet_people_UserID_meow-weight-tracker_users_UserID_fk",
+        "meow-weight-tracker_pet_people_user_id_meow-weight-tracker_users_id_fk": {
+          "name": "meow-weight-tracker_pet_people_user_id_meow-weight-tracker_users_id_fk",
           "tableFrom": "meow-weight-tracker_pet_people",
           "tableTo": "meow-weight-tracker_users",
           "columnsFrom": [
-            "UserID"
+            "user_id"
           ],
           "columnsTo": [
-            "UserID"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
-        "meow-weight-tracker_pet_people_PetID_meow-weight-tracker_pets_PetID_fk": {
-          "name": "meow-weight-tracker_pet_people_PetID_meow-weight-tracker_pets_PetID_fk",
+        "meow-weight-tracker_pet_people_pet_id_meow-weight-tracker_pets_id_fk": {
+          "name": "meow-weight-tracker_pet_people_pet_id_meow-weight-tracker_pets_id_fk",
           "tableFrom": "meow-weight-tracker_pet_people",
           "tableTo": "meow-weight-tracker_pets",
           "columnsFrom": [
-            "PetID"
+            "pet_id"
           ],
           "columnsTo": [
-            "PetID"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
-        "meow-weight-tracker_pet_people_UserID_PetID_pk": {
-          "name": "meow-weight-tracker_pet_people_UserID_PetID_pk",
+        "meow-weight-tracker_pet_people_user_id_pet_id_pk": {
+          "name": "meow-weight-tracker_pet_people_user_id_pet_id_pk",
           "columns": [
-            "UserID",
-            "PetID"
+            "user_id",
+            "pet_id"
           ]
         }
       },
@@ -270,35 +270,55 @@
       "name": "meow-weight-tracker_pets",
       "schema": "",
       "columns": {
-        "PetID": {
-          "name": "PetID",
+        "id": {
+          "name": "id",
           "type": "serial",
           "primaryKey": true,
           "notNull": true
         },
-        "Species": {
-          "name": "Species",
-          "type": "varchar",
+        "species": {
+          "name": "species",
+          "type": "varchar(64)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gender": {
+          "name": "gender",
+          "type": "varchar(16)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "varchar(128)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "birth_date": {
+          "name": "birth_date",
+          "type": "date",
           "primaryKey": false,
           "notNull": false
         },
-        "Gender": {
-          "name": "Gender",
-          "type": "varchar",
+        "deleted_at": {
+          "name": "deleted_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false
         },
-        "Name": {
-          "name": "Name",
-          "type": "varchar",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         },
-        "Age": {
-          "name": "Age",
-          "type": "integer",
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {},
@@ -310,34 +330,28 @@
       "name": "meow-weight-tracker_users",
       "schema": "",
       "columns": {
-        "UserID": {
-          "name": "UserID",
+        "id": {
+          "name": "id",
           "type": "varchar(256)",
           "primaryKey": true,
           "notNull": true
         },
-        "CreationTime": {
-          "name": "CreationTime",
-          "type": "timestamp",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         },
-        "UpdatedTime": {
-          "name": "UpdatedTime",
-          "type": "timestamp",
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
         }
       },
-      "indexes": {
-        "user_id_index": {
-          "name": "user_id_index",
-          "columns": [
-            "UserID"
-          ],
-          "isUnique": false
-        }
-      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {}
@@ -346,56 +360,64 @@
       "name": "meow-weight-tracker_weight_history",
       "schema": "",
       "columns": {
-        "RecordID": {
-          "name": "RecordID",
+        "id": {
+          "name": "id",
           "type": "serial",
           "primaryKey": true,
           "notNull": true
         },
-        "PetID": {
-          "name": "PetID",
+        "pet_id": {
+          "name": "pet_id",
           "type": "integer",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "CreationTime": {
-          "name": "CreationTime",
-          "type": "timestamp",
+        "weighed_at": {
+          "name": "weighed_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "WeightTime": {
-          "name": "WeightTime",
-          "type": "timestamp",
+        "weight": {
+          "name": "weight",
+          "type": "real",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
-        "Weight": {
-          "name": "Weight",
-          "type": "numeric",
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         }
       },
       "indexes": {
-        "weight_history_pet_index": {
-          "name": "weight_history_pet_index",
+        "weight_history_pet_id_idx": {
+          "name": "weight_history_pet_id_idx",
           "columns": [
-            "PetID"
+            "pet_id"
           ],
           "isUnique": false
         }
       },
       "foreignKeys": {
-        "meow-weight-tracker_weight_history_PetID_meow-weight-tracker_pets_PetID_fk": {
-          "name": "meow-weight-tracker_weight_history_PetID_meow-weight-tracker_pets_PetID_fk",
+        "meow-weight-tracker_weight_history_pet_id_meow-weight-tracker_pets_id_fk": {
+          "name": "meow-weight-tracker_weight_history_pet_id_meow-weight-tracker_pets_id_fk",
           "tableFrom": "meow-weight-tracker_weight_history",
           "tableTo": "meow-weight-tracker_pets",
           "columnsFrom": [
-            "PetID"
+            "pet_id"
           ],
           "columnsTo": [
-            "PetID"
+            "id"
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
@@ -406,8 +428,8 @@
     }
   },
   "enums": {
-    "public.Role": {
-      "name": "Role",
+    "public.pet_role": {
+      "name": "pet_role",
       "schema": "public",
       "values": [
         "Owner",
