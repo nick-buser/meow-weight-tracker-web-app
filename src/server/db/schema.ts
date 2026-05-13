@@ -115,3 +115,21 @@ export const eatingHistory = createTable(
         petIdx: index("eating_history_pet_id_idx").on(table.petId),
     }),
 );
+
+export const activityHistory = createTable(
+    "activity_history",
+    {
+        id: serial("id").primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        activityType: varchar("activity_type", { length: 64 }).notNull(),
+        durationMinutes: integer("duration_minutes").notNull(),
+        performedAt: timestamp("performed_at", { withTimezone: true }).notNull(),
+        notes: varchar("notes", { length: 1024 }),
+        ...timestamps,
+    },
+    (table) => ({
+        petIdx: index("activity_history_pet_id_idx").on(table.petId),
+    }),
+);
