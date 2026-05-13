@@ -5,6 +5,7 @@ import {
     CartesianGrid,
     Line,
     LineChart,
+    ReferenceLine,
     ResponsiveContainer,
     Tooltip,
     XAxis,
@@ -32,9 +33,11 @@ const RANGES: { value: Range; label: string; days: number | null }[] = [
 export function WeightChart({
     petId,
     petName,
+    goalWeight = null,
 }: {
     petId: number;
     petName: string;
+    goalWeight?: number | null;
 }) {
     const [range, setRange] = useState<Range>("90d");
     const { data, isLoading } = api.weight.getWeightHistory.useQuery({ petId });
@@ -134,6 +137,19 @@ export function WeightChart({
                                     dot={{ r: 3 }}
                                     activeDot={{ r: 5 }}
                                 />
+                                {goalWeight !== null && (
+                                    <ReferenceLine
+                                        y={goalWeight}
+                                        stroke="hsl(var(--destructive))"
+                                        strokeDasharray="4 4"
+                                        label={{
+                                            value: `Goal ${goalWeight.toFixed(2)}`,
+                                            position: "right",
+                                            fontSize: 11,
+                                            fill: "hsl(var(--destructive))",
+                                        }}
+                                    />
+                                )}
                             </LineChart>
                         </ResponsiveContainer>
                     </div>

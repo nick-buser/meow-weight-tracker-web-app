@@ -6,8 +6,13 @@ import { TRPCError } from "@trpc/server";
 import { Button } from "~/components/ui/button";
 import { PetEditCard } from "~/app/dashboard/pets/[id]/_components/pet-edit-card";
 import { FeedingHistoryList } from "~/app/dashboard/pets/[id]/_components/feeding-history-list";
+import { WeightHistoryList } from "~/app/dashboard/pets/[id]/_components/weight-history-list";
+import { ExportCard } from "~/app/dashboard/pets/[id]/_components/export-card";
+import { HealthEventsCard } from "~/app/dashboard/pets/[id]/_components/health-events-card";
 import { DeletePetCard } from "~/app/dashboard/pets/[id]/_components/delete-pet-card";
+import { PetAlerts } from "~/app/dashboard/_components/pet-alerts";
 import { WeightChart } from "~/app/dashboard/_components/weight-chart";
+import { WeightStatsCard } from "~/app/dashboard/_components/weight-stats-card";
 import { api } from "~/trpc/server";
 
 export default async function PetDetailPage({
@@ -37,9 +42,22 @@ export default async function PetDetailPage({
                     </Link>
                 </Button>
             </div>
+            <PetAlerts petId={pet.id} petName={pet.name} />
             <PetEditCard pet={pet} />
-            <WeightChart petId={pet.id} petName={pet.name} />
-            <FeedingHistoryList petId={pet.id} />
+            <WeightStatsCard
+                petId={pet.id}
+                petName={pet.name}
+                goalWeight={pet.goalWeight}
+            />
+            <WeightChart
+                petId={pet.id}
+                petName={pet.name}
+                goalWeight={pet.goalWeight}
+            />
+            <WeightHistoryList petId={pet.id} canEdit={pet.role !== "Viewer"} />
+            <FeedingHistoryList petId={pet.id} canEdit={pet.role !== "Viewer"} />
+            <HealthEventsCard petId={pet.id} canEdit={pet.role !== "Viewer"} />
+            <ExportCard petId={pet.id} />
             <DeletePetCard petId={pet.id} petName={pet.name} role={pet.role} />
         </div>
     );
