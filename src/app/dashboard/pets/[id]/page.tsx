@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
+import { ChevronLeft, Users } from "lucide-react";
 import { TRPCError } from "@trpc/server";
 
 import { Button } from "~/components/ui/button";
@@ -34,11 +34,17 @@ export default async function PetDetailPage({
 
     return (
         <div className="space-y-6">
-            <div>
+            <div className="flex items-center justify-between">
                 <Button asChild variant="ghost" size="sm" className="-ml-2">
                     <Link href="/dashboard">
                         <ChevronLeft className="mr-1 h-4 w-4" />
                         Dashboard
+                    </Link>
+                </Button>
+                <Button asChild variant="outline" size="sm">
+                    <Link href={`/dashboard/pets/${pet.id}/people`}>
+                        <Users className="mr-1 h-3.5 w-3.5" />
+                        People
                     </Link>
                 </Button>
             </div>

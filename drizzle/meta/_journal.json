@@ -43,6 +43,13 @@
       "when": 1778708272560,
       "tag": "0005_cynical_winter_soldier",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1778708533204,
+      "tag": "0006_worthless_iron_patriot",
+      "breakpoints": true
     }
   ]
 }
