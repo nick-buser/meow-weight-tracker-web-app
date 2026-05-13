@@ -38,6 +38,7 @@ export const pets = createTable("pets", {
     birthDate: date("birth_date"),
     goalWeight: real("goal_weight"),
     dailyKcalTarget: integer("daily_kcal_target"),
+    photoUrl: varchar("photo_url", { length: 1024 }),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     ...timestamps,
 });
@@ -60,6 +61,28 @@ export const petPeople = createTable(
         pk: primaryKey({ columns: [table.userId, table.petId] }),
         userIdx: index("pet_people_user_id_idx").on(table.userId),
         petIdx: index("pet_people_pet_id_idx").on(table.petId),
+    }),
+);
+
+export const petInvites = createTable(
+    "pet_invites",
+    {
+        token: varchar("token", { length: 64 }).primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        role: roleEnum("role").notNull(),
+        createdBy: varchar("created_by", { length: 256 })
+            .references(() => users.id)
+            .notNull(),
+        acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+        acceptedBy: varchar("accepted_by", { length: 256 }).references(
+            () => users.id,
+        ),
+        ...timestamps,
+    },
+    (table) => ({
+        petIdx: index("pet_invites_pet_id_idx").on(table.petId),
     }),
 );
 
@@ -131,6 +154,25 @@ export const activityHistory = createTable(
     },
     (table) => ({
         petIdx: index("activity_history_pet_id_idx").on(table.petId),
+    }),
+);
+
+export const petNotes = createTable(
+    "pet_notes",
+    {
+        id: serial("id").primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        body: varchar("body", { length: 4096 }).notNull(),
+        writtenAt: timestamp("written_at", { withTimezone: true }).notNull(),
+        writtenBy: varchar("written_by", { length: 256 })
+            .references(() => users.id)
+            .notNull(),
+        ...timestamps,
+    },
+    (table) => ({
+        petIdx: index("pet_notes_pet_id_idx").on(table.petId),
     }),
 );
 

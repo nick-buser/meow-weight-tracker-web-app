@@ -8,9 +8,26 @@ import {SpeedInsights} from "@vercel/speed-insights/next";
 import { Toaster } from "~/components/ui/toaster";
 
 export const metadata = {
-  title: "Meow weight tracker",
-  description: "web app to help manage and track your pet's weight",
-  icons: [{ rel: "icon", url: "/favicon.ico" }],
+  title: "Meow Weight Tracker",
+  description: "Track your cat's weight, feedings, and habits.",
+  manifest: "/site.webmanifest",
+  icons: [
+    { rel: "icon", url: "/favicon.ico" },
+    { rel: "icon", url: "/icon.svg", type: "image/svg+xml" },
+    { rel: "apple-touch-icon", url: "/apple-touch-icon.svg" },
+  ],
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default" as const,
+    title: "Meow",
+  },
+};
+
+export const viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#0f0f0f" },
+  ],
 };
 
 export default function RootLayout({

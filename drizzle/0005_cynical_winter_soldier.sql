@@ -1,0 +1,1 @@
+ALTER TABLE "meow-weight-tracker_pets" ADD COLUMN "photo_url" varchar(1024);
