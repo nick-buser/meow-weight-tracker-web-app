@@ -10,6 +10,7 @@ import { RecordFeedingDialog } from "~/app/dashboard/_components/record-feeding-
 import { RecordWeightDialog } from "~/app/dashboard/_components/record-weight-dialog";
 import { TodayFeedings } from "~/app/dashboard/_components/today-feedings";
 import { WeightChart } from "~/app/dashboard/_components/weight-chart";
+import { WeightStatsCard } from "~/app/dashboard/_components/weight-stats-card";
 import { type RouterOutputs } from "~/trpc/react";
 
 type Pet = RouterOutputs["pet"]["getPets"][number];
@@ -41,6 +42,11 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
                 petId={selectedPet.id}
                 petName={selectedPet.name}
                 dailyKcalTarget={selectedPet.dailyKcalTarget}
+            />
+            <WeightStatsCard
+                petId={selectedPet.id}
+                petName={selectedPet.name}
+                goalWeight={selectedPet.goalWeight}
             />
             <WeightChart
                 petId={selectedPet.id}

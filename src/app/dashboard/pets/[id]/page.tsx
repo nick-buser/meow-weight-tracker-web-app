@@ -8,6 +8,7 @@ import { PetEditCard } from "~/app/dashboard/pets/[id]/_components/pet-edit-card
 import { FeedingHistoryList } from "~/app/dashboard/pets/[id]/_components/feeding-history-list";
 import { DeletePetCard } from "~/app/dashboard/pets/[id]/_components/delete-pet-card";
 import { WeightChart } from "~/app/dashboard/_components/weight-chart";
+import { WeightStatsCard } from "~/app/dashboard/_components/weight-stats-card";
 import { api } from "~/trpc/server";
 
 export default async function PetDetailPage({
@@ -38,6 +39,11 @@ export default async function PetDetailPage({
                 </Button>
             </div>
             <PetEditCard pet={pet} />
+            <WeightStatsCard
+                petId={pet.id}
+                petName={pet.name}
+                goalWeight={pet.goalWeight}
+            />
             <WeightChart
                 petId={pet.id}
                 petName={pet.name}
