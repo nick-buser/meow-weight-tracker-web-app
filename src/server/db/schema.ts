@@ -157,6 +157,25 @@ export const activityHistory = createTable(
     }),
 );
 
+export const petNotes = createTable(
+    "pet_notes",
+    {
+        id: serial("id").primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        body: varchar("body", { length: 4096 }).notNull(),
+        writtenAt: timestamp("written_at", { withTimezone: true }).notNull(),
+        writtenBy: varchar("written_by", { length: 256 })
+            .references(() => users.id)
+            .notNull(),
+        ...timestamps,
+    },
+    (table) => ({
+        petIdx: index("pet_notes_pet_id_idx").on(table.petId),
+    }),
+);
+
 export const healthEvents = createTable(
     "health_events",
     {
