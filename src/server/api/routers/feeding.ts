@@ -1,22 +1,24 @@
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { db } from "~/server/db";
+import { asc, eq } from "drizzle-orm";
+
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { EatingHistory } from "~/server/db/schema";
 import { getFeedingHistoryInput } from "~/schema/getFeedingHistoryInput";
 import { recordFeedingInput } from "~/schema/recordFeedingInput";
+import { assertPetAccess } from "~/server/api/petAccess";
 
 export const feedingRouter = createTRPCRouter({
-    // Endpoint to record a pet's feeding
-    recordFeeding: publicProcedure
+    recordFeeding: protectedProcedure
         .input(recordFeedingInput)
-        .mutation(async ({ input }) => {
+        .mutation(async ({ ctx, input }) => {
             const { petId, foodId, quantity, fedAt } = input;
+            await assertPetAccess(ctx.db, ctx.userId, petId);
 
-            const newFeedingEntry = await db.insert(EatingHistory).values({
+            const [newFeedingEntry] = await ctx.db.insert(EatingHistory).values({
                 PetID: petId,
                 FoodID: foodId,
                 Quantity: quantity,
-                CreatedAtUTC: new Date(), // When the record was created
-                FedAtUTC: fedAt ?? new Date(), // When the feeding occurred
+                CreatedAtUTC: new Date(),
+                FedAtUTC: fedAt ?? new Date(),
             }).returning({
                 EntryID: EatingHistory.EntryID,
                 PetID: EatingHistory.PetID,
@@ -33,22 +35,15 @@ export const feedingRouter = createTRPCRouter({
             return newFeedingEntry;
         }),
 
-    // Endpoint to get feeding history for a pet
-    getFeedingHistory: publicProcedure
+    getFeedingHistory: protectedProcedure
         .input(getFeedingHistoryInput)
-        .query(async ({ input }) => {
+        .query(async ({ ctx, input }) => {
             const { petId } = input;
+            await assertPetAccess(ctx.db, ctx.userId, petId);
 
-            const feedingHistory = await db.select()
+            return ctx.db.select()
                 .from(EatingHistory)
-                .where(EatingHistory.PetID === petId)
-                .orderBy(EatingHistory.FedAtUTC.asc())
-                .execute();
-
-            if (!feedingHistory) {
-                throw new Error("Failed to fetch feeding history or no records found.");
-            }
-
-            return feedingHistory;
+                .where(eq(EatingHistory.PetID, petId))
+                .orderBy(asc(EatingHistory.FedAtUTC));
         }),
 });
