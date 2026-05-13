@@ -9,14 +9,20 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { FeedingRowActions } from "~/app/dashboard/_components/feeding-row-actions";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 export function TodayFeedings({
     petId,
     petName,
+    dailyKcalTarget,
+    canEdit = true,
 }: {
     petId: number;
     petName: string;
+    dailyKcalTarget: number | null;
+    canEdit?: boolean;
 }) {
     const { data, isLoading } = api.feeding.getFeedingHistory.useQuery({
         petId,
@@ -38,6 +44,11 @@ export function TodayFeedings({
         (sum, row) => sum + row.quantityGrams * row.food.caloriesPerGram,
         0,
     );
+    const pct =
+        dailyKcalTarget && dailyKcalTarget > 0
+            ? Math.min(100, (totalKcal / dailyKcalTarget) * 100)
+            : null;
+    const over = dailyKcalTarget !== null && totalKcal > dailyKcalTarget;
 
     return (
         <Card>
@@ -52,10 +63,29 @@ export function TodayFeedings({
                 <div className="text-right">
                     <div className="text-2xl font-semibold">
                         {totalKcal.toFixed(0)}
+                        {dailyKcalTarget && (
+                            <span className="text-sm text-muted-foreground">
+                                {" "}
+                                / {dailyKcalTarget}
+                            </span>
+                        )}
                     </div>
                     <div className="text-xs text-muted-foreground">kcal today</div>
                 </div>
             </CardHeader>
+            {pct !== null && (
+                <div className="-mt-3 mb-3 px-6">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                            className={cn(
+                                "h-full rounded-full bg-primary transition-all",
+                                over && "bg-destructive",
+                            )}
+                            style={{ width: `${pct}%` }}
+                        />
+                    </div>
+                </div>
+            )}
             <CardContent>
                 {isLoading ? (
                     <p className="text-sm text-muted-foreground">Loading…</p>
@@ -70,10 +100,10 @@ export function TodayFeedings({
                             return (
                                 <li
                                     key={row.id}
-                                    className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
+                                    className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
                                 >
-                                    <div>
-                                        <div className="font-medium">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="truncate font-medium">
                                             {row.food.brand
                                                 ? `${row.food.brand} — ${row.food.name}`
                                                 : row.food.name}
@@ -89,6 +119,11 @@ export function TodayFeedings({
                                     <div className="text-sm font-medium">
                                         {kcal.toFixed(0)} kcal
                                     </div>
+                                    <FeedingRowActions
+                                        row={row}
+                                        petId={petId}
+                                        canEdit={canEdit}
+                                    />
                                 </li>
                             );
                         })}

@@ -1,10 +1,33 @@
 import { asc, eq } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { type db } from "~/server/db";
 import { weightHistory } from "~/server/db/schema";
 import { getWeightHistoryInput } from "~/schema/getPetWeightInput";
 import { recordWeightInput } from "~/schema/recordPetWeightInput";
+import {
+    deleteWeightEntryInput,
+} from "~/schema/deleteWeightEntryInput";
+import {
+    updateWeightEntryInput,
+} from "~/schema/updateWeightEntryInput";
 import { assertPetAccess } from "~/server/api/petAccess";
+
+async function loadEntryPetId(
+    database: typeof db,
+    entryId: number,
+): Promise<number> {
+    const [row] = await database
+        .select({ petId: weightHistory.petId })
+        .from(weightHistory)
+        .where(eq(weightHistory.id, entryId))
+        .limit(1);
+    if (!row) {
+        throw new TRPCError({ code: "NOT_FOUND", message: "Weight entry not found." });
+    }
+    return row.petId;
+}
 
 export const weightRouter = createTRPCRouter({
     recordWeight: protectedProcedure
@@ -38,5 +61,50 @@ export const weightRouter = createTRPCRouter({
                 .from(weightHistory)
                 .where(eq(weightHistory.petId, input.petId))
                 .orderBy(asc(weightHistory.weighedAt));
+        }),
+
+    updateEntry: protectedProcedure
+        .input(updateWeightEntryInput)
+        .mutation(async ({ ctx, input }) => {
+            const petId = await loadEntryPetId(ctx.db, input.entryId);
+            const role = await assertPetAccess(ctx.db, ctx.userId, petId);
+            if (role === "Viewer") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Viewer role cannot edit entries.",
+                });
+            }
+            const patch: Record<string, unknown> = { updatedAt: new Date() };
+            if (input.weight !== undefined) patch.weight = input.weight;
+            if (input.weighedAt !== undefined) patch.weighedAt = input.weighedAt;
+            const [row] = await ctx.db
+                .update(weightHistory)
+                .set(patch)
+                .where(eq(weightHistory.id, input.entryId))
+                .returning();
+            if (!row) {
+                throw new TRPCError({
+                    code: "INTERNAL_SERVER_ERROR",
+                    message: "Failed to update weight entry.",
+                });
+            }
+            return row;
+        }),
+
+    deleteEntry: protectedProcedure
+        .input(deleteWeightEntryInput)
+        .mutation(async ({ ctx, input }) => {
+            const petId = await loadEntryPetId(ctx.db, input.entryId);
+            const role = await assertPetAccess(ctx.db, ctx.userId, petId);
+            if (role === "Viewer") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Viewer role cannot delete entries.",
+                });
+            }
+            await ctx.db
+                .delete(weightHistory)
+                .where(eq(weightHistory.id, input.entryId));
+            return { ok: true as const };
         }),
 });
