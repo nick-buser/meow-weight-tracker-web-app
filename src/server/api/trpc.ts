@@ -12,7 +12,7 @@ import superjson from "superjson";
 import { ZodError } from "zod";
 
 import { db } from "~/server/db";
-import { Users } from "~/server/db/schema";
+import { users } from "~/server/db/schema";
 
 /**
  * 1. CONTEXT
@@ -89,8 +89,8 @@ export const publicProcedure = t.procedure;
 /**
  * Protected (authenticated) procedure.
  *
- * Requires a signed-in Clerk user. Lazily upserts the user into our `Users` table on first call so
- * downstream foreign keys (e.g. `PetPeople.UserID`) are always valid without needing a separate
+ * Requires a signed-in Clerk user. Lazily upserts the user into our `users` table on first call so
+ * downstream foreign keys (e.g. `petPeople.userId`) are always valid without needing a separate
  * Clerk webhook.
  */
 const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
@@ -98,10 +98,9 @@ const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" });
   }
 
-  const now = new Date();
   await ctx.db
-    .insert(Users)
-    .values({ UserID: ctx.userId, CreatedAt: now, UpdatedAt: now })
+    .insert(users)
+    .values({ id: ctx.userId })
     .onConflictDoNothing();
 
   return next({ ctx: { ...ctx, userId: ctx.userId } });
