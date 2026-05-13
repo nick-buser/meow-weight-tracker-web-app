@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
@@ -11,9 +10,15 @@ import { type RouterOutputs } from "~/trpc/react";
 
 type Pet = RouterOutputs["pet"]["getPets"][number];
 
-export function PetPicker({ pets }: { pets: Pet[] }) {
-    const [selectedId, setSelectedId] = useState<number>(pets[0]!.id);
-
+export function PetPicker({
+    pets,
+    selectedId,
+    onSelect,
+}: {
+    pets: Pet[];
+    selectedId: number;
+    onSelect: (id: number) => void;
+}) {
     return (
         <div>
             <div className="mb-3 flex items-center justify-between">
@@ -31,7 +36,7 @@ export function PetPicker({ pets }: { pets: Pet[] }) {
                     return (
                         <button
                             key={pet.id}
-                            onClick={() => setSelectedId(pet.id)}
+                            onClick={() => onSelect(pet.id)}
                             className="text-left"
                         >
                             <Card
