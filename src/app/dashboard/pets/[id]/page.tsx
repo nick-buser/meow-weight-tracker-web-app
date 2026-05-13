@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { PetEditCard } from "~/app/dashboard/pets/[id]/_components/pet-edit-card";
 import { FeedingHistoryList } from "~/app/dashboard/pets/[id]/_components/feeding-history-list";
 import { WeightHistoryList } from "~/app/dashboard/pets/[id]/_components/weight-history-list";
+import { ExportCard } from "~/app/dashboard/pets/[id]/_components/export-card";
 import { DeletePetCard } from "~/app/dashboard/pets/[id]/_components/delete-pet-card";
 import { PetAlerts } from "~/app/dashboard/_components/pet-alerts";
 import { WeightChart } from "~/app/dashboard/_components/weight-chart";
@@ -54,6 +55,7 @@ export default async function PetDetailPage({
             />
             <WeightHistoryList petId={pet.id} canEdit={pet.role !== "Viewer"} />
             <FeedingHistoryList petId={pet.id} canEdit={pet.role !== "Viewer"} />
+            <ExportCard petId={pet.id} />
             <DeletePetCard petId={pet.id} petName={pet.name} role={pet.role} />
         </div>
     );
