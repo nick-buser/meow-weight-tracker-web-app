@@ -42,6 +42,7 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
                 petId={selectedPet.id}
                 petName={selectedPet.name}
                 dailyKcalTarget={selectedPet.dailyKcalTarget}
+                canEdit={selectedPet.role !== "Viewer"}
             />
             <WeightStatsCard
                 petId={selectedPet.id}

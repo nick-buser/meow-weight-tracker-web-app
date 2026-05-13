@@ -9,6 +9,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { FeedingRowActions } from "~/app/dashboard/_components/feeding-row-actions";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
@@ -16,10 +17,12 @@ export function TodayFeedings({
     petId,
     petName,
     dailyKcalTarget,
+    canEdit = true,
 }: {
     petId: number;
     petName: string;
     dailyKcalTarget: number | null;
+    canEdit?: boolean;
 }) {
     const { data, isLoading } = api.feeding.getFeedingHistory.useQuery({
         petId,
@@ -97,10 +100,10 @@ export function TodayFeedings({
                             return (
                                 <li
                                     key={row.id}
-                                    className="flex items-center justify-between rounded-md border px-3 py-2 text-sm"
+                                    className="flex items-center justify-between gap-2 rounded-md border px-3 py-2 text-sm"
                                 >
-                                    <div>
-                                        <div className="font-medium">
+                                    <div className="min-w-0 flex-1">
+                                        <div className="truncate font-medium">
                                             {row.food.brand
                                                 ? `${row.food.brand} — ${row.food.name}`
                                                 : row.food.name}
@@ -116,6 +119,11 @@ export function TodayFeedings({
                                     <div className="text-sm font-medium">
                                         {kcal.toFixed(0)} kcal
                                     </div>
+                                    <FeedingRowActions
+                                        row={row}
+                                        petId={petId}
+                                        canEdit={canEdit}
+                                    />
                                 </li>
                             );
                         })}

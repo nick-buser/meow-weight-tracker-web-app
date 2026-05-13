@@ -51,7 +51,7 @@ export default async function PetDetailPage({
                 goalWeight={pet.goalWeight}
             />
             <WeightHistoryList petId={pet.id} canEdit={pet.role !== "Viewer"} />
-            <FeedingHistoryList petId={pet.id} />
+            <FeedingHistoryList petId={pet.id} canEdit={pet.role !== "Viewer"} />
             <DeletePetCard petId={pet.id} petName={pet.name} role={pet.role} />
         </div>
     );
