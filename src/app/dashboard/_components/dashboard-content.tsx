@@ -7,8 +7,10 @@ import { ChevronRight } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { PetAlerts } from "~/app/dashboard/_components/pet-alerts";
 import { PetPicker } from "~/app/dashboard/_components/pet-picker";
+import { RecordActivityDialog } from "~/app/dashboard/_components/record-activity-dialog";
 import { RecordFeedingDialog } from "~/app/dashboard/_components/record-feeding-dialog";
 import { RecordWeightDialog } from "~/app/dashboard/_components/record-weight-dialog";
+import { TodayActivity } from "~/app/dashboard/_components/today-activity";
 import { TodayFeedings } from "~/app/dashboard/_components/today-feedings";
 import { WeightChart } from "~/app/dashboard/_components/weight-chart";
 import { WeightStatsCard } from "~/app/dashboard/_components/weight-stats-card";
@@ -36,14 +38,20 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
                     </Link>
                 </Button>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-3">
                 <RecordWeightDialog pet={selectedPet} />
                 <RecordFeedingDialog pet={selectedPet} />
+                <RecordActivityDialog pet={selectedPet} />
             </div>
             <TodayFeedings
                 petId={selectedPet.id}
                 petName={selectedPet.name}
                 dailyKcalTarget={selectedPet.dailyKcalTarget}
+                canEdit={selectedPet.role !== "Viewer"}
+            />
+            <TodayActivity
+                petId={selectedPet.id}
+                petName={selectedPet.name}
                 canEdit={selectedPet.role !== "Viewer"}
             />
             <WeightStatsCard
