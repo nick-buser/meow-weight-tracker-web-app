@@ -10,6 +10,7 @@ import {
 } from "~/components/ui/card";
 import { PetPicker } from "~/app/dashboard/_components/pet-picker";
 import { RecordWeightDialog } from "~/app/dashboard/_components/record-weight-dialog";
+import { WeightChart } from "~/app/dashboard/_components/weight-chart";
 import { type RouterOutputs } from "~/trpc/react";
 
 type Pet = RouterOutputs["pet"]["getPets"][number];
@@ -36,6 +37,7 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
                     </CardHeader>
                 </Card>
             </div>
+            <WeightChart petId={selectedPet.id} petName={selectedPet.name} />
         </div>
     );
 }
