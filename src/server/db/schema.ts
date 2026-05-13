@@ -133,3 +133,21 @@ export const activityHistory = createTable(
         petIdx: index("activity_history_pet_id_idx").on(table.petId),
     }),
 );
+
+export const healthEvents = createTable(
+    "health_events",
+    {
+        id: serial("id").primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        eventType: varchar("event_type", { length: 64 }).notNull(),
+        title: varchar("title", { length: 256 }).notNull(),
+        occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull(),
+        notes: varchar("notes", { length: 2048 }),
+        ...timestamps,
+    },
+    (table) => ({
+        petIdx: index("health_events_pet_id_idx").on(table.petId),
+    }),
+);

@@ -4,6 +4,7 @@ import { weightRouter } from "~/server/api/routers/weight";
 import { feedingRouter } from "~/server/api/routers/feeding";
 import { foodRouter } from "~/server/api/routers/food";
 import { activityRouter } from "~/server/api/routers/activity";
+import { healthRouter } from "~/server/api/routers/health";
 
 /**
  * This is the primary router for your server.
@@ -16,6 +17,7 @@ export const appRouter = createTRPCRouter({
   feeding: feedingRouter,
   food: foodRouter,
   activity: activityRouter,
+  health: healthRouter,
 });
 
 // export type definition of API
