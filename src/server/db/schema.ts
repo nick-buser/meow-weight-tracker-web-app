@@ -38,6 +38,7 @@ export const pets = createTable("pets", {
     birthDate: date("birth_date"),
     goalWeight: real("goal_weight"),
     dailyKcalTarget: integer("daily_kcal_target"),
+    photoUrl: varchar("photo_url", { length: 1024 }),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     ...timestamps,
 });

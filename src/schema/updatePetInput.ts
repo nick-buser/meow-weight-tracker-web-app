@@ -12,6 +12,7 @@ export const updatePetInput = z.object({
         .optional(),
     goalWeight: z.number().positive().nullable().optional(),
     dailyKcalTarget: z.number().int().positive().nullable().optional(),
+    photoUrl: z.string().url().max(1024).nullable().optional(),
 });
 
 export type UpdatePetInput = z.infer<typeof updatePetInput>;

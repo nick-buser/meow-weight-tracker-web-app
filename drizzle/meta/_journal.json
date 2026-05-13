@@ -36,6 +36,13 @@
       "when": 1778705180664,
       "tag": "0004_fat_overlord",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1778708272560,
+      "tag": "0005_cynical_winter_soldier",
+      "breakpoints": true
     }
   ]
 }

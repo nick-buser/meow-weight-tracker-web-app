@@ -50,6 +50,7 @@ export const petRouter = createTRPCRouter({
                 birthDate: pets.birthDate,
                 goalWeight: pets.goalWeight,
                 dailyKcalTarget: pets.dailyKcalTarget,
+                photoUrl: pets.photoUrl,
                 createdAt: pets.createdAt,
                 updatedAt: pets.updatedAt,
                 role: petPeople.role,
@@ -95,6 +96,7 @@ export const petRouter = createTRPCRouter({
             if (input.goalWeight !== undefined) patch.goalWeight = input.goalWeight;
             if (input.dailyKcalTarget !== undefined)
                 patch.dailyKcalTarget = input.dailyKcalTarget;
+            if (input.photoUrl !== undefined) patch.photoUrl = input.photoUrl;
 
             const [row] = await ctx.db
                 .update(pets)
