@@ -1,15 +1,15 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
+import { ChevronRight } from "lucide-react";
 
-import {
-    Card,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
 import { PetPicker } from "~/app/dashboard/_components/pet-picker";
+import { RecordFeedingDialog } from "~/app/dashboard/_components/record-feeding-dialog";
 import { RecordWeightDialog } from "~/app/dashboard/_components/record-weight-dialog";
+import { TodayFeedings } from "~/app/dashboard/_components/today-feedings";
+import { WeightChart } from "~/app/dashboard/_components/weight-chart";
 import { type RouterOutputs } from "~/trpc/react";
 
 type Pet = RouterOutputs["pet"]["getPets"][number];
@@ -25,17 +25,20 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
                 selectedId={selectedPet.id}
                 onSelect={setSelectedId}
             />
+            <div className="flex justify-end">
+                <Button asChild variant="ghost" size="sm">
+                    <Link href={`/dashboard/pets/${selectedPet.id}`}>
+                        {selectedPet.name}&apos;s details
+                        <ChevronRight className="ml-1 h-4 w-4" />
+                    </Link>
+                </Button>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2">
                 <RecordWeightDialog pet={selectedPet} />
-                <Card aria-disabled className="opacity-60">
-                    <CardHeader>
-                        <CardTitle>Log feeding</CardTitle>
-                        <CardDescription>
-                            Coming soon: pick a food, enter grams, done.
-                        </CardDescription>
-                    </CardHeader>
-                </Card>
+                <RecordFeedingDialog pet={selectedPet} />
             </div>
+            <TodayFeedings petId={selectedPet.id} petName={selectedPet.name} />
+            <WeightChart petId={selectedPet.id} petName={selectedPet.name} />
         </div>
     );
 }

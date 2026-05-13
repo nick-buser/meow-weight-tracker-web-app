@@ -1,7 +1,7 @@
-import { asc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { eatingHistory } from "~/server/db/schema";
+import { eatingHistory, petFood } from "~/server/db/schema";
 import { getFeedingHistoryInput } from "~/schema/getFeedingHistoryInput";
 import { recordFeedingInput } from "~/schema/recordFeedingInput";
 import { assertPetAccess } from "~/server/api/petAccess";
@@ -35,9 +35,16 @@ export const feedingRouter = createTRPCRouter({
             await assertPetAccess(ctx.db, ctx.userId, input.petId);
 
             return ctx.db
-                .select()
+                .select({
+                    id: eatingHistory.id,
+                    petId: eatingHistory.petId,
+                    fedAt: eatingHistory.fedAt,
+                    quantityGrams: eatingHistory.quantityGrams,
+                    food: petFood,
+                })
                 .from(eatingHistory)
+                .innerJoin(petFood, eq(eatingHistory.foodId, petFood.id))
                 .where(eq(eatingHistory.petId, input.petId))
-                .orderBy(asc(eatingHistory.fedAt));
+                .orderBy(desc(eatingHistory.fedAt));
         }),
 });

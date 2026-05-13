@@ -2,6 +2,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { petRouter } from "~/server/api/routers/pet";
 import { weightRouter } from "~/server/api/routers/weight";
 import { feedingRouter } from "~/server/api/routers/feeding";
+import { foodRouter } from "~/server/api/routers/food";
 
 /**
  * This is the primary router for your server.
@@ -12,6 +13,7 @@ export const appRouter = createTRPCRouter({
   pet: petRouter,
   weight: weightRouter,
   feeding: feedingRouter,
+  food: foodRouter,
 });
 
 // export type definition of API
