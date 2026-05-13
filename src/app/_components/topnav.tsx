@@ -15,6 +15,12 @@ export function TopNav() {
                     >
                         Dashboard
                     </Link>
+                    <Link
+                        href="/dashboard/foods"
+                        className="text-sm text-muted-foreground hover:text-foreground"
+                    >
+                        Foods
+                    </Link>
                     <UserButton afterSignOutUrl="/" />
                 </SignedIn>
                 <SignedOut>
