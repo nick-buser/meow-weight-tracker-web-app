@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -27,7 +28,9 @@ export function TodayActivity({
     const deleteEntry = api.activity.deleteEntry.useMutation({
         onSuccess: async () => {
             await utils.activity.getHistory.invalidate({ petId });
+            toast.success("Activity deleted");
         },
+        onError: (err) => toast.error(err.message),
     });
 
     const today = useMemo(() => {

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { PlayCircle } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -50,7 +51,9 @@ export function RecordActivityDialog({ pet }: { pet: Pet }) {
             setDuration("");
             setPerformedAt("");
             setNotes("");
+            toast.success(`Activity logged for ${pet.name}`);
         },
+        onError: (err) => toast.error(err.message),
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {

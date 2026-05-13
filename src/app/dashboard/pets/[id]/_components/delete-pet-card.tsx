@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -40,7 +41,9 @@ export function DeletePetCard({
             await utils.pet.getPets.invalidate();
             router.push("/dashboard");
             router.refresh();
+            toast.success(`${petName} deleted`);
         },
+        onError: (err) => toast.error(err.message),
     });
 
     if (role !== "Owner") return null;

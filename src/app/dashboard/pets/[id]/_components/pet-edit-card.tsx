@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Pencil } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -39,7 +40,9 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                 utils.pet.getPets.invalidate(),
             ]);
             setEditing(false);
+            toast.success(`${pet.name} updated`);
         },
+        onError: (err) => toast.error(err.message),
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {

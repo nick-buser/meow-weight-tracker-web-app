@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -18,7 +19,7 @@ export function AddFoodForm() {
     const [notes, setNotes] = useState("");
 
     const createFood = api.food.create.useMutation({
-        onSuccess: async () => {
+        onSuccess: async (food) => {
             await utils.food.list.invalidate();
             setName("");
             setBrand("");
@@ -27,7 +28,9 @@ export function AddFoodForm() {
             setFat("");
             setCarbs("");
             setNotes("");
+            toast.success(`${food.name} added`);
         },
+        onError: (err) => toast.error(err.message),
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {
