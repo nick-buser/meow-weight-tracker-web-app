@@ -1,22 +1,23 @@
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { db } from "~/server/db";
+import { asc, eq } from "drizzle-orm";
+
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { WeightHistory } from "~/server/db/schema";
 import { getWeightHistoryInput } from "~/schema/getPetWeightInput";
 import { recordWeightInput } from "~/schema/recordPetWeightInput";
-
+import { assertPetAccess } from "~/server/api/petAccess";
 
 export const weightRouter = createTRPCRouter({
-    // Endpoint to record a pet's weight
-    recordWeight: publicProcedure
+    recordWeight: protectedProcedure
         .input(recordWeightInput)
-        .mutation(async ({ input }) => {
+        .mutation(async ({ ctx, input }) => {
             const { petId, weight, recordedAt } = input;
+            await assertPetAccess(ctx.db, ctx.userId, petId);
 
-            const newWeightEntry = await db.insert(WeightHistory).values({
+            const [newWeightEntry] = await ctx.db.insert(WeightHistory).values({
                 PetID: petId,
                 Weight: weight,
-                CreatedUTC: new Date(), // When the record was created
-                WeightedUTC: recordedAt ?? new Date(), // When the weight was recorded
+                CreatedUTC: new Date(),
+                WeightedUTC: recordedAt ?? new Date(),
             }).returning({
                 RecordID: WeightHistory.RecordID,
                 PetID: WeightHistory.PetID,
@@ -32,22 +33,15 @@ export const weightRouter = createTRPCRouter({
             return newWeightEntry;
         }),
 
-    // Endpoint to get weight history for a pet
-    getWeightHistory: publicProcedure
+    getWeightHistory: protectedProcedure
         .input(getWeightHistoryInput)
-        .query(async ({ input }) => {
+        .query(async ({ ctx, input }) => {
             const { petId } = input;
+            await assertPetAccess(ctx.db, ctx.userId, petId);
 
-            const weightHistory = await db.select()
+            return ctx.db.select()
                 .from(WeightHistory)
-                .where(WeightHistory.PetID === petId)
-                .orderBy(WeightHistory.WeightedUTC.asc())
-                .execute();
-
-            if (!weightHistory) {
-                throw new Error("Failed to fetch weight history or no records found.");
-            }
-
-            return weightHistory;
+                .where(eq(WeightHistory.PetID, petId))
+                .orderBy(asc(WeightHistory.WeightedUTC));
         }),
 });
