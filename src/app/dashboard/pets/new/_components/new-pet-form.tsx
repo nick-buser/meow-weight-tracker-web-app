@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -17,11 +18,13 @@ export function NewPetForm() {
     const [birthDate, setBirthDate] = useState("");
 
     const createPet = api.pet.insertPet.useMutation({
-        onSuccess: async () => {
+        onSuccess: async (pet) => {
             await utils.pet.getPets.invalidate();
             router.push("/dashboard");
             router.refresh();
+            toast.success(`${pet.name} added`);
         },
+        onError: (err) => toast.error(err.message),
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {

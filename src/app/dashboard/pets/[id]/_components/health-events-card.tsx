@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { HeartPulse, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -54,12 +55,16 @@ export function HealthEventsCard({
             setTitle("");
             setOccurredAt("");
             setNotes("");
+            toast.success("Health event added");
         },
+        onError: (err) => toast.error(err.message),
     });
     const deleteEntry = api.health.deleteEntry.useMutation({
         onSuccess: async () => {
             await utils.health.getHistory.invalidate({ petId });
+            toast.success("Event deleted");
         },
+        onError: (err) => toast.error(err.message),
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {

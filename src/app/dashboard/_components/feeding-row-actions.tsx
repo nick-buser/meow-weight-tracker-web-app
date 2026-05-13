@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -38,12 +39,16 @@ export function FeedingRowActions({
         onSuccess: async () => {
             await utils.feeding.getFeedingHistory.invalidate({ petId });
             setEditing(false);
+            toast.success("Feeding updated");
         },
+        onError: (err) => toast.error(err.message),
     });
     const deleteEntry = api.feeding.deleteEntry.useMutation({
         onSuccess: async () => {
             await utils.feeding.getFeedingHistory.invalidate({ petId });
+            toast.success("Feeding deleted");
         },
+        onError: (err) => toast.error(err.message),
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {

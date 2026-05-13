@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Scale } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -38,7 +39,9 @@ export function RecordWeightDialog({ pet }: { pet: Pet }) {
             setOpen(false);
             setWeight("");
             setRecordedAt("");
+            toast.success(`Weight saved for ${pet.name}`);
         },
+        onError: (err) => toast.error(err.message),
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {

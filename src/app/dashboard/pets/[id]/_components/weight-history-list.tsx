@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Pencil, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -77,12 +78,16 @@ function WeightRow({
         onSuccess: async () => {
             await utils.weight.getWeightHistory.invalidate({ petId });
             setEditing(false);
+            toast.success("Weight updated");
         },
+        onError: (err) => toast.error(err.message),
     });
     const deleteEntry = api.weight.deleteEntry.useMutation({
         onSuccess: async () => {
             await utils.weight.getWeightHistory.invalidate({ petId });
+            toast.success("Weight deleted");
         },
+        onError: (err) => toast.error(err.message),
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {

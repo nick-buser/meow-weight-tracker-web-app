@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
+import { KcalTrendChart } from "~/app/dashboard/_components/kcal-trend-chart";
 import { PetAlerts } from "~/app/dashboard/_components/pet-alerts";
 import { PetPicker } from "~/app/dashboard/_components/pet-picker";
 import { RecordActivityDialog } from "~/app/dashboard/_components/record-activity-dialog";
@@ -48,6 +49,11 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
                 petName={selectedPet.name}
                 dailyKcalTarget={selectedPet.dailyKcalTarget}
                 canEdit={selectedPet.role !== "Viewer"}
+            />
+            <KcalTrendChart
+                petId={selectedPet.id}
+                petName={selectedPet.name}
+                dailyKcalTarget={selectedPet.dailyKcalTarget}
             />
             <TodayActivity
                 petId={selectedPet.id}

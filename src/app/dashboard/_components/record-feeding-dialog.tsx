@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 import { Utensils } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -49,7 +50,9 @@ export function RecordFeedingDialog({ pet }: { pet: Pet }) {
             setOpen(false);
             setGrams("");
             setFedAt("");
+            toast.success(`Feeding logged for ${pet.name}`);
         },
+        onError: (err) => toast.error(err.message),
     });
 
     useEffect(() => {

@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Pencil } from "lucide-react";
+import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -13,6 +14,7 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { PetAvatar } from "~/components/ui/pet-avatar";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/react";
 
@@ -30,6 +32,7 @@ export function PetEditCard({ pet }: { pet: Pet }) {
     const [dailyKcalTarget, setDailyKcalTarget] = useState(
         pet.dailyKcalTarget !== null ? String(pet.dailyKcalTarget) : "",
     );
+    const [photoUrl, setPhotoUrl] = useState(pet.photoUrl ?? "");
 
     const utils = api.useUtils();
     const updatePet = api.pet.updatePet.useMutation({
@@ -39,7 +42,9 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                 utils.pet.getPets.invalidate(),
             ]);
             setEditing(false);
+            toast.success(`${pet.name} updated`);
         },
+        onError: (err) => toast.error(err.message),
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -54,6 +59,7 @@ export function PetEditCard({ pet }: { pet: Pet }) {
             birthDate: birthDate ? birthDate : null,
             goalWeight: goal,
             dailyKcalTarget: kcal,
+            photoUrl: photoUrl.trim() ? photoUrl.trim() : null,
         });
     }
 
@@ -62,9 +68,15 @@ export function PetEditCard({ pet }: { pet: Pet }) {
     return (
         <Card>
             <CardHeader className="flex flex-row items-start justify-between space-y-0">
-                <div>
-                    <CardTitle>{pet.name}</CardTitle>
-                    <CardDescription>
+                <div className="flex items-center gap-3">
+                    <PetAvatar
+                        name={pet.name}
+                        photoUrl={pet.photoUrl}
+                        size="lg"
+                    />
+                    <div>
+                        <CardTitle>{pet.name}</CardTitle>
+                        <CardDescription>
                         {[
                             pet.species,
                             pet.gender,
@@ -79,6 +91,7 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                             .filter(Boolean)
                             .join(" · ")}
                     </CardDescription>
+                    </div>
                 </div>
                 {canEdit && !editing && (
                     <Button
@@ -169,6 +182,16 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                                     placeholder="—"
                                 />
                             </div>
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="edit-photo">Photo URL</Label>
+                            <Input
+                                id="edit-photo"
+                                type="url"
+                                value={photoUrl}
+                                onChange={(e) => setPhotoUrl(e.target.value)}
+                                placeholder="https://…"
+                            />
                         </div>
                         {updatePet.error && (
                             <p className="text-sm text-destructive">

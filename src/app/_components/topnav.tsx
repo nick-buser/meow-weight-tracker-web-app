@@ -11,15 +11,21 @@ export function TopNav() {
                 <SignedIn>
                     <Link
                         href="/dashboard"
-                        className="text-sm text-muted-foreground hover:text-foreground"
+                        className="hidden text-sm text-muted-foreground hover:text-foreground md:inline"
                     >
                         Dashboard
                     </Link>
                     <Link
                         href="/dashboard/foods"
-                        className="text-sm text-muted-foreground hover:text-foreground"
+                        className="hidden text-sm text-muted-foreground hover:text-foreground md:inline"
                     >
                         Foods
+                    </Link>
+                    <Link
+                        href="/dashboard/pets/deleted"
+                        className="hidden text-sm text-muted-foreground hover:text-foreground md:inline"
+                    >
+                        Deleted
                     </Link>
                     <UserButton afterSignOutUrl="/" />
                 </SignedIn>

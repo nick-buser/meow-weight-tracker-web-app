@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
+import { PetAvatar } from "~/components/ui/pet-avatar";
 import { cn } from "~/lib/utils";
 import { type RouterOutputs } from "~/trpc/react";
 
@@ -46,9 +47,10 @@ export function PetPicker({
                                 )}
                             >
                                 <CardContent className="flex items-center gap-3 p-4">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-base font-semibold">
-                                        {pet.name.charAt(0).toUpperCase()}
-                                    </div>
+                                    <PetAvatar
+                                        name={pet.name}
+                                        photoUrl={pet.photoUrl}
+                                    />
                                     <div>
                                         <div className="font-medium">{pet.name}</div>
                                         <div className="text-xs text-muted-foreground">
