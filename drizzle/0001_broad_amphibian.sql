@@ -1,0 +1,1 @@
+ALTER TABLE "meow-weight-tracker_pets" ADD COLUMN "deleted_at" timestamp with time zone;
