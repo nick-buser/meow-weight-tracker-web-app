@@ -2,13 +2,8 @@
 
 import { useState } from "react";
 
-import {
-    Card,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "~/components/ui/card";
 import { PetPicker } from "~/app/dashboard/_components/pet-picker";
+import { RecordFeedingDialog } from "~/app/dashboard/_components/record-feeding-dialog";
 import { RecordWeightDialog } from "~/app/dashboard/_components/record-weight-dialog";
 import { WeightChart } from "~/app/dashboard/_components/weight-chart";
 import { type RouterOutputs } from "~/trpc/react";
@@ -28,14 +23,7 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
             />
             <div className="grid gap-4 sm:grid-cols-2">
                 <RecordWeightDialog pet={selectedPet} />
-                <Card aria-disabled className="opacity-60">
-                    <CardHeader>
-                        <CardTitle>Log feeding</CardTitle>
-                        <CardDescription>
-                            Coming soon: pick a food, enter grams, done.
-                        </CardDescription>
-                    </CardHeader>
-                </Card>
+                <RecordFeedingDialog pet={selectedPet} />
             </div>
             <WeightChart petId={selectedPet.id} petName={selectedPet.name} />
         </div>
