@@ -1,0 +1,129 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { Scale } from "lucide-react";
+
+import { Button } from "~/components/ui/button";
+import {
+    Card,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "~/components/ui/card";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "~/components/ui/dialog";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { api } from "~/trpc/react";
+import { type RouterOutputs } from "~/trpc/react";
+
+type Pet = RouterOutputs["pet"]["getPets"][number];
+
+export function RecordWeightDialog({ pet }: { pet: Pet }) {
+    const [open, setOpen] = useState(false);
+    const [weight, setWeight] = useState("");
+    const [recordedAt, setRecordedAt] = useState("");
+
+    const utils = api.useUtils();
+    const recordWeight = api.weight.recordWeight.useMutation({
+        onSuccess: async () => {
+            await utils.weight.getWeightHistory.invalidate({ petId: pet.id });
+            setOpen(false);
+            setWeight("");
+            setRecordedAt("");
+        },
+    });
+
+    function onSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        const numeric = Number(weight);
+        if (!Number.isFinite(numeric) || numeric <= 0) return;
+        recordWeight.mutate({
+            petId: pet.id,
+            weight: numeric,
+            ...(recordedAt ? { recordedAt: new Date(recordedAt) } : {}),
+        });
+    }
+
+    return (
+        <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+                <Card className="cursor-pointer transition-colors hover:bg-accent">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Scale className="h-4 w-4" />
+                            Log weight
+                        </CardTitle>
+                        <CardDescription>
+                            Record a new weight for {pet.name}.
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
+            </DialogTrigger>
+            <DialogContent>
+                <form onSubmit={onSubmit} className="space-y-4">
+                    <DialogHeader>
+                        <DialogTitle>Log weight for {pet.name}</DialogTitle>
+                        <DialogDescription>
+                            Enter the latest weight reading. Defaults to right now.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="weight">Weight</Label>
+                        <Input
+                            id="weight"
+                            type="number"
+                            inputMode="decimal"
+                            step="0.01"
+                            min="0"
+                            required
+                            autoFocus
+                            value={weight}
+                            onChange={(e) => setWeight(e.target.value)}
+                            placeholder="5.4"
+                        />
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label htmlFor="recordedAt">When (optional)</Label>
+                        <Input
+                            id="recordedAt"
+                            type="datetime-local"
+                            value={recordedAt}
+                            onChange={(e) => setRecordedAt(e.target.value)}
+                            max={new Date().toISOString().slice(0, 16)}
+                        />
+                    </div>
+
+                    {recordWeight.error && (
+                        <p className="text-sm text-destructive">
+                            {recordWeight.error.message}
+                        </p>
+                    )}
+
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                            disabled={recordWeight.isPending}
+                        >
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={recordWeight.isPending}>
+                            {recordWeight.isPending ? "Saving…" : "Save weight"}
+                        </Button>
+                    </DialogFooter>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
