@@ -5,6 +5,7 @@ import { useState } from "react";
 import { PetPicker } from "~/app/dashboard/_components/pet-picker";
 import { RecordFeedingDialog } from "~/app/dashboard/_components/record-feeding-dialog";
 import { RecordWeightDialog } from "~/app/dashboard/_components/record-weight-dialog";
+import { TodayFeedings } from "~/app/dashboard/_components/today-feedings";
 import { WeightChart } from "~/app/dashboard/_components/weight-chart";
 import { type RouterOutputs } from "~/trpc/react";
 
@@ -25,6 +26,7 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
                 <RecordWeightDialog pet={selectedPet} />
                 <RecordFeedingDialog pet={selectedPet} />
             </div>
+            <TodayFeedings petId={selectedPet.id} petName={selectedPet.name} />
             <WeightChart petId={selectedPet.id} petName={selectedPet.name} />
         </div>
     );
