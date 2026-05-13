@@ -9,12 +9,19 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { FeedingRowActions } from "~/app/dashboard/_components/feeding-row-actions";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/react";
 
 type Feeding = RouterOutputs["feeding"]["getFeedingHistory"][number];
 
-export function FeedingHistoryList({ petId }: { petId: number }) {
+export function FeedingHistoryList({
+    petId,
+    canEdit,
+}: {
+    petId: number;
+    canEdit: boolean;
+}) {
     const { data, isLoading } = api.feeding.getFeedingHistory.useQuery({
         petId,
     });
@@ -56,10 +63,10 @@ export function FeedingHistoryList({ petId }: { petId: number }) {
                                         return (
                                             <li
                                                 key={row.id}
-                                                className="flex items-center justify-between py-2 text-sm"
+                                                className="flex items-center justify-between gap-2 py-2 text-sm"
                                             >
-                                                <div>
-                                                    <div className="font-medium">
+                                                <div className="min-w-0 flex-1">
+                                                    <div className="truncate font-medium">
                                                         {row.food.brand
                                                             ? `${row.food.brand} — ${row.food.name}`
                                                             : row.food.name}
@@ -73,6 +80,11 @@ export function FeedingHistoryList({ petId }: { petId: number }) {
                                                     </div>
                                                 </div>
                                                 <div>{kcal.toFixed(0)} kcal</div>
+                                                <FeedingRowActions
+                                                    row={row}
+                                                    petId={petId}
+                                                    canEdit={canEdit}
+                                                />
                                             </li>
                                         );
                                     })}
