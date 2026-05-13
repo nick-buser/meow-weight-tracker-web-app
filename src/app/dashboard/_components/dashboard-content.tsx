@@ -5,6 +5,7 @@ import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
+import { PetAlerts } from "~/app/dashboard/_components/pet-alerts";
 import { PetPicker } from "~/app/dashboard/_components/pet-picker";
 import { RecordFeedingDialog } from "~/app/dashboard/_components/record-feeding-dialog";
 import { RecordWeightDialog } from "~/app/dashboard/_components/record-weight-dialog";
@@ -21,6 +22,7 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
 
     return (
         <div className="space-y-6">
+            <PetAlerts petId={selectedPet.id} petName={selectedPet.name} />
             <PetPicker
                 pets={pets}
                 selectedId={selectedPet.id}
