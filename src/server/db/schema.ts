@@ -36,6 +36,7 @@ export const pets = createTable("pets", {
     gender: varchar("gender", { length: 16 }).notNull(),
     name: varchar("name", { length: 128 }).notNull(),
     birthDate: date("birth_date"),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
     ...timestamps,
 });
 
