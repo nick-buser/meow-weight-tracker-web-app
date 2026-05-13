@@ -9,14 +9,17 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 export function TodayFeedings({
     petId,
     petName,
+    dailyKcalTarget,
 }: {
     petId: number;
     petName: string;
+    dailyKcalTarget: number | null;
 }) {
     const { data, isLoading } = api.feeding.getFeedingHistory.useQuery({
         petId,
@@ -38,6 +41,11 @@ export function TodayFeedings({
         (sum, row) => sum + row.quantityGrams * row.food.caloriesPerGram,
         0,
     );
+    const pct =
+        dailyKcalTarget && dailyKcalTarget > 0
+            ? Math.min(100, (totalKcal / dailyKcalTarget) * 100)
+            : null;
+    const over = dailyKcalTarget !== null && totalKcal > dailyKcalTarget;
 
     return (
         <Card>
@@ -52,10 +60,29 @@ export function TodayFeedings({
                 <div className="text-right">
                     <div className="text-2xl font-semibold">
                         {totalKcal.toFixed(0)}
+                        {dailyKcalTarget && (
+                            <span className="text-sm text-muted-foreground">
+                                {" "}
+                                / {dailyKcalTarget}
+                            </span>
+                        )}
                     </div>
                     <div className="text-xs text-muted-foreground">kcal today</div>
                 </div>
             </CardHeader>
+            {pct !== null && (
+                <div className="-mt-3 mb-3 px-6">
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                        <div
+                            className={cn(
+                                "h-full rounded-full bg-primary transition-all",
+                                over && "bg-destructive",
+                            )}
+                            style={{ width: `${pct}%` }}
+                        />
+                    </div>
+                </div>
+            )}
             <CardContent>
                 {isLoading ? (
                     <p className="text-sm text-muted-foreground">Loading…</p>

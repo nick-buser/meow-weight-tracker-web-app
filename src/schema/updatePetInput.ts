@@ -10,6 +10,8 @@ export const updatePetInput = z.object({
         .regex(/^\d{4}-\d{2}-\d{2}$/, "Expected YYYY-MM-DD")
         .nullable()
         .optional(),
+    goalWeight: z.number().positive().nullable().optional(),
+    dailyKcalTarget: z.number().int().positive().nullable().optional(),
 });
 
 export type UpdatePetInput = z.infer<typeof updatePetInput>;

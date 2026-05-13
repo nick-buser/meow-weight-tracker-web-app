@@ -37,8 +37,16 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
                 <RecordWeightDialog pet={selectedPet} />
                 <RecordFeedingDialog pet={selectedPet} />
             </div>
-            <TodayFeedings petId={selectedPet.id} petName={selectedPet.name} />
-            <WeightChart petId={selectedPet.id} petName={selectedPet.name} />
+            <TodayFeedings
+                petId={selectedPet.id}
+                petName={selectedPet.name}
+                dailyKcalTarget={selectedPet.dailyKcalTarget}
+            />
+            <WeightChart
+                petId={selectedPet.id}
+                petName={selectedPet.name}
+                goalWeight={selectedPet.goalWeight}
+            />
         </div>
     );
 }

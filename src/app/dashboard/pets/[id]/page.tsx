@@ -38,7 +38,11 @@ export default async function PetDetailPage({
                 </Button>
             </div>
             <PetEditCard pet={pet} />
-            <WeightChart petId={pet.id} petName={pet.name} />
+            <WeightChart
+                petId={pet.id}
+                petName={pet.name}
+                goalWeight={pet.goalWeight}
+            />
             <FeedingHistoryList petId={pet.id} />
             <DeletePetCard petId={pet.id} petName={pet.name} role={pet.role} />
         </div>

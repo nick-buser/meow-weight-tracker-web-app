@@ -24,6 +24,12 @@ export function PetEditCard({ pet }: { pet: Pet }) {
     const [species, setSpecies] = useState(pet.species);
     const [gender, setGender] = useState(pet.gender);
     const [birthDate, setBirthDate] = useState(pet.birthDate ?? "");
+    const [goalWeight, setGoalWeight] = useState(
+        pet.goalWeight !== null ? String(pet.goalWeight) : "",
+    );
+    const [dailyKcalTarget, setDailyKcalTarget] = useState(
+        pet.dailyKcalTarget !== null ? String(pet.dailyKcalTarget) : "",
+    );
 
     const utils = api.useUtils();
     const updatePet = api.pet.updatePet.useMutation({
@@ -38,12 +44,16 @@ export function PetEditCard({ pet }: { pet: Pet }) {
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
+        const goal = goalWeight.trim() ? Number(goalWeight) : null;
+        const kcal = dailyKcalTarget.trim() ? Number(dailyKcalTarget) : null;
         updatePet.mutate({
             petId: pet.id,
             name: name.trim(),
             species: species.trim(),
             gender: gender.trim(),
             birthDate: birthDate ? birthDate : null,
+            goalWeight: goal,
+            dailyKcalTarget: kcal,
         });
     }
 
@@ -55,7 +65,17 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                 <div>
                     <CardTitle>{pet.name}</CardTitle>
                     <CardDescription>
-                        {[pet.species, pet.gender, ageLabel(pet.birthDate)]
+                        {[
+                            pet.species,
+                            pet.gender,
+                            ageLabel(pet.birthDate),
+                            pet.goalWeight !== null
+                                ? `goal ${pet.goalWeight.toFixed(2)}`
+                                : null,
+                            pet.dailyKcalTarget !== null
+                                ? `${pet.dailyKcalTarget} kcal/day`
+                                : null,
+                        ]
                             .filter(Boolean)
                             .join(" · ")}
                     </CardDescription>
@@ -84,31 +104,33 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                                 onChange={(e) => setName(e.target.value)}
                             />
                         </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="edit-species">Species</Label>
-                            <select
-                                id="edit-species"
-                                value={species}
-                                onChange={(e) => setSpecies(e.target.value)}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            >
-                                <option value="Cat">Cat</option>
-                                <option value="Dog">Dog</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-                        <div className="space-y-1">
-                            <Label htmlFor="edit-gender">Gender</Label>
-                            <select
-                                id="edit-gender"
-                                value={gender}
-                                onChange={(e) => setGender(e.target.value)}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                            >
-                                <option value="Female">Female</option>
-                                <option value="Male">Male</option>
-                                <option value="Unknown">Unknown</option>
-                            </select>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <Label htmlFor="edit-species">Species</Label>
+                                <select
+                                    id="edit-species"
+                                    value={species}
+                                    onChange={(e) => setSpecies(e.target.value)}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                >
+                                    <option value="Cat">Cat</option>
+                                    <option value="Dog">Dog</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="edit-gender">Gender</Label>
+                                <select
+                                    id="edit-gender"
+                                    value={gender}
+                                    onChange={(e) => setGender(e.target.value)}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                                >
+                                    <option value="Female">Female</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Unknown">Unknown</option>
+                                </select>
+                            </div>
                         </div>
                         <div className="space-y-1">
                             <Label htmlFor="edit-birth">Birth date</Label>
@@ -119,6 +141,34 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                                 onChange={(e) => setBirthDate(e.target.value)}
                                 max={new Date().toISOString().slice(0, 10)}
                             />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                                <Label htmlFor="edit-goal">Goal weight</Label>
+                                <Input
+                                    id="edit-goal"
+                                    type="number"
+                                    inputMode="decimal"
+                                    step="0.01"
+                                    min="0"
+                                    value={goalWeight}
+                                    onChange={(e) => setGoalWeight(e.target.value)}
+                                    placeholder="—"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label htmlFor="edit-kcal">Daily kcal target</Label>
+                                <Input
+                                    id="edit-kcal"
+                                    type="number"
+                                    inputMode="numeric"
+                                    step="1"
+                                    min="0"
+                                    value={dailyKcalTarget}
+                                    onChange={(e) => setDailyKcalTarget(e.target.value)}
+                                    placeholder="—"
+                                />
+                            </div>
                         </div>
                         {updatePet.error && (
                             <p className="text-sm text-destructive">
