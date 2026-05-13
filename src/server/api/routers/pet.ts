@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -131,6 +131,54 @@ export const petRouter = createTRPCRouter({
             await ctx.db
                 .update(pets)
                 .set({ deletedAt: now, updatedAt: now })
+                .where(eq(pets.id, input.petId));
+            return { ok: true as const };
+        }),
+
+    listDeleted: protectedProcedure.query(async ({ ctx }) => {
+        return ctx.db
+            .select({
+                id: pets.id,
+                name: pets.name,
+                species: pets.species,
+                photoUrl: pets.photoUrl,
+                deletedAt: pets.deletedAt,
+                role: petPeople.role,
+            })
+            .from(pets)
+            .innerJoin(petPeople, eq(pets.id, petPeople.petId))
+            .where(
+                and(
+                    eq(petPeople.userId, ctx.userId),
+                    eq(petPeople.role, "Owner"),
+                    isNotNull(pets.deletedAt),
+                ),
+            );
+    }),
+
+    restorePet: protectedProcedure
+        .input(getPetInput)
+        .mutation(async ({ ctx, input }) => {
+            // assertPetAccess refuses deleted pets, so we check ownership manually here.
+            const [access] = await ctx.db
+                .select({ role: petPeople.role })
+                .from(petPeople)
+                .where(
+                    and(
+                        eq(petPeople.petId, input.petId),
+                        eq(petPeople.userId, ctx.userId),
+                    ),
+                )
+                .limit(1);
+            if (!access || access.role !== "Owner") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Only the Owner can restore a pet.",
+                });
+            }
+            await ctx.db
+                .update(pets)
+                .set({ deletedAt: null, updatedAt: new Date() })
                 .where(eq(pets.id, input.petId));
             return { ok: true as const };
         }),
