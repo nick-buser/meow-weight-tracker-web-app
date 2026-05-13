@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
@@ -54,7 +54,9 @@ export const petRouter = createTRPCRouter({
             })
             .from(pets)
             .innerJoin(petPeople, eq(pets.id, petPeople.petId))
-            .where(eq(petPeople.userId, ctx.userId));
+            .where(
+                and(eq(petPeople.userId, ctx.userId), isNull(pets.deletedAt)),
+            );
     }),
 
     getPet: protectedProcedure
@@ -64,7 +66,7 @@ export const petRouter = createTRPCRouter({
             const [row] = await ctx.db
                 .select()
                 .from(pets)
-                .where(eq(pets.id, input.petId))
+                .where(and(eq(pets.id, input.petId), isNull(pets.deletedAt)))
                 .limit(1);
             if (!row) {
                 throw new TRPCError({ code: "NOT_FOUND" });
@@ -102,5 +104,23 @@ export const petRouter = createTRPCRouter({
                 });
             }
             return row;
+        }),
+
+    deletePet: protectedProcedure
+        .input(getPetInput)
+        .mutation(async ({ ctx, input }) => {
+            const role = await assertPetAccess(ctx.db, ctx.userId, input.petId);
+            if (role !== "Owner") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Only the Owner can delete a pet.",
+                });
+            }
+            const now = new Date();
+            await ctx.db
+                .update(pets)
+                .set({ deletedAt: now, updatedAt: now })
+                .where(eq(pets.id, input.petId));
+            return { ok: true as const };
         }),
 });
