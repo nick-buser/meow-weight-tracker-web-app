@@ -1,6 +1,3 @@
-import Link from "next/link";
-
-import { Button } from "~/components/ui/button";
 import {
     Card,
     CardContent,
@@ -8,6 +5,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { NewPetForm } from "~/app/dashboard/pets/new/_components/new-pet-form";
 
 export default function NewPetPage() {
     return (
@@ -16,13 +14,11 @@ export default function NewPetPage() {
                 <CardHeader>
                     <CardTitle>Add a cat</CardTitle>
                     <CardDescription>
-                        The form lands in the next stack. For now this is a placeholder.
+                        We&apos;ll use this to track weight, feedings, and habits.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <Button asChild variant="outline">
-                        <Link href="/dashboard">Back to dashboard</Link>
-                    </Button>
+                    <NewPetForm />
                 </CardContent>
             </Card>
         </div>

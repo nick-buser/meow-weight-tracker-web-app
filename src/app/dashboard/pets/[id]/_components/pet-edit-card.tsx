@@ -1,0 +1,158 @@
+"use client";
+
+import { useState, type FormEvent } from "react";
+import { Pencil } from "lucide-react";
+
+import { Button } from "~/components/ui/button";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from "~/components/ui/card";
+import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { api } from "~/trpc/react";
+import { type RouterOutputs } from "~/trpc/react";
+
+type Pet = RouterOutputs["pet"]["getPet"];
+
+export function PetEditCard({ pet }: { pet: Pet }) {
+    const [editing, setEditing] = useState(false);
+    const [name, setName] = useState(pet.name);
+    const [species, setSpecies] = useState(pet.species);
+    const [gender, setGender] = useState(pet.gender);
+    const [birthDate, setBirthDate] = useState(pet.birthDate ?? "");
+
+    const utils = api.useUtils();
+    const updatePet = api.pet.updatePet.useMutation({
+        onSuccess: async () => {
+            await Promise.all([
+                utils.pet.getPet.invalidate({ petId: pet.id }),
+                utils.pet.getPets.invalidate(),
+            ]);
+            setEditing(false);
+        },
+    });
+
+    function onSubmit(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+        updatePet.mutate({
+            petId: pet.id,
+            name: name.trim(),
+            species: species.trim(),
+            gender: gender.trim(),
+            birthDate: birthDate ? birthDate : null,
+        });
+    }
+
+    const canEdit = pet.role !== "Viewer";
+
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-start justify-between space-y-0">
+                <div>
+                    <CardTitle>{pet.name}</CardTitle>
+                    <CardDescription>
+                        {[pet.species, pet.gender, ageLabel(pet.birthDate)]
+                            .filter(Boolean)
+                            .join(" · ")}
+                    </CardDescription>
+                </div>
+                {canEdit && !editing && (
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditing(true)}
+                    >
+                        <Pencil className="mr-1 h-3.5 w-3.5" />
+                        Edit
+                    </Button>
+                )}
+            </CardHeader>
+            {editing && (
+                <CardContent>
+                    <form onSubmit={onSubmit} className="space-y-3">
+                        <div className="space-y-1">
+                            <Label htmlFor="edit-name">Name</Label>
+                            <Input
+                                id="edit-name"
+                                required
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="edit-species">Species</Label>
+                            <select
+                                id="edit-species"
+                                value={species}
+                                onChange={(e) => setSpecies(e.target.value)}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                                <option value="Cat">Cat</option>
+                                <option value="Dog">Dog</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="edit-gender">Gender</Label>
+                            <select
+                                id="edit-gender"
+                                value={gender}
+                                onChange={(e) => setGender(e.target.value)}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                            >
+                                <option value="Female">Female</option>
+                                <option value="Male">Male</option>
+                                <option value="Unknown">Unknown</option>
+                            </select>
+                        </div>
+                        <div className="space-y-1">
+                            <Label htmlFor="edit-birth">Birth date</Label>
+                            <Input
+                                id="edit-birth"
+                                type="date"
+                                value={birthDate}
+                                onChange={(e) => setBirthDate(e.target.value)}
+                                max={new Date().toISOString().slice(0, 10)}
+                            />
+                        </div>
+                        {updatePet.error && (
+                            <p className="text-sm text-destructive">
+                                {updatePet.error.message}
+                            </p>
+                        )}
+                        <div className="flex justify-end gap-2 pt-1">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => setEditing(false)}
+                                disabled={updatePet.isPending}
+                            >
+                                Cancel
+                            </Button>
+                            <Button type="submit" disabled={updatePet.isPending}>
+                                {updatePet.isPending ? "Saving…" : "Save"}
+                            </Button>
+                        </div>
+                    </form>
+                </CardContent>
+            )}
+        </Card>
+    );
+}
+
+function ageLabel(birthDate: string | null): string | null {
+    if (!birthDate) return null;
+    const born = new Date(birthDate);
+    const now = new Date();
+    const months =
+        (now.getFullYear() - born.getFullYear()) * 12 +
+        (now.getMonth() - born.getMonth());
+    if (months < 12) return `${months} mo old`;
+    const years = Math.floor(months / 12);
+    return `${years} yr old`;
+}
