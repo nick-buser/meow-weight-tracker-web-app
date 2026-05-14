@@ -20,6 +20,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { Skeleton } from "~/components/ui/skeleton";
 import { computeDailyKcal } from "~/lib/kcal-trend";
 import { api } from "~/trpc/react";
 
@@ -53,9 +54,7 @@ export function KcalTrendChart({
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
-                        Loading…
-                    </div>
+                    <Skeleton className="h-48 w-full" />
                 ) : (
                     <div className="h-48 w-full">
                         <ResponsiveContainer width="100%" height="100%">

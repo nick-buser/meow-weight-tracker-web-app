@@ -20,6 +20,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
@@ -83,9 +84,7 @@ export function WeightChart({
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-                        Loading…
-                    </div>
+                    <Skeleton className="h-64 w-full" />
                 ) : points.length === 0 ? (
                     <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
                         No weight readings in this range yet.
