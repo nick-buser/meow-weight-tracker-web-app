@@ -320,6 +320,7 @@ export const petRouter = createTRPCRouter({
                 });
             }
             const token = randomUUID().replace(/-/g, "");
+            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             const [row] = await ctx.db
                 .insert(petInvites)
                 .values({
@@ -327,6 +328,7 @@ export const petRouter = createTRPCRouter({
                     petId: input.petId,
                     role: input.role,
                     createdBy: ctx.userId,
+                    expiresAt,
                 })
                 .returning();
             if (!row) {
@@ -336,6 +338,54 @@ export const petRouter = createTRPCRouter({
                 });
             }
             return row;
+        }),
+
+    listInvites: protectedProcedure
+        .input(getPetInput)
+        .query(async ({ ctx, input }) => {
+            const role = await assertPetAccess(ctx.db, ctx.userId, input.petId);
+            if (role !== "Owner") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Only the Owner can list invites.",
+                });
+            }
+            return ctx.db
+                .select()
+                .from(petInvites)
+                .where(eq(petInvites.petId, input.petId));
+        }),
+
+    revokeInvite: protectedProcedure
+        .input(z.object({ token: z.string().min(1) }))
+        .mutation(async ({ ctx, input }) => {
+            const [invite] = await ctx.db
+                .select()
+                .from(petInvites)
+                .where(eq(petInvites.token, input.token))
+                .limit(1);
+            if (!invite) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Invite not found.",
+                });
+            }
+            const role = await assertPetAccess(
+                ctx.db,
+                ctx.userId,
+                invite.petId,
+            );
+            if (role !== "Owner") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Only the Owner can revoke invites.",
+                });
+            }
+            await ctx.db
+                .update(petInvites)
+                .set({ revokedAt: new Date() })
+                .where(eq(petInvites.token, input.token));
+            return { ok: true as const };
         }),
 
     acceptInvite: protectedProcedure
@@ -356,6 +406,21 @@ export const petRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: "BAD_REQUEST",
                     message: "Invite already used.",
+                });
+            }
+            if (invite.revokedAt !== null) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invite was revoked.",
+                });
+            }
+            if (
+                invite.expiresAt !== null &&
+                invite.expiresAt.getTime() < Date.now()
+            ) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invite has expired.",
                 });
             }
             await ctx.db

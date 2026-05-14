@@ -34,14 +34,51 @@ export function RecordWeightDialog({ pet }: { pet: Pet }) {
 
     const utils = api.useUtils();
     const recordWeight = api.weight.recordWeight.useMutation({
-        onSuccess: async () => {
-            await utils.weight.getWeightHistory.invalidate({ petId: pet.id });
+        onMutate: async (vars) => {
+            await utils.weight.getWeightHistory.cancel({ petId: pet.id });
+            const previous = utils.weight.getWeightHistory.getData({
+                petId: pet.id,
+            });
+            const at = vars.recordedAt ?? new Date();
+            const tempId = -Date.now();
+            utils.weight.getWeightHistory.setData(
+                { petId: pet.id },
+                (rows) =>
+                    [
+                        ...(rows ?? []),
+                        {
+                            id: tempId,
+                            petId: pet.id,
+                            weight: vars.weight,
+                            weighedAt: at,
+                            createdAt: at,
+                            updatedAt: at,
+                        },
+                    ].sort(
+                        (a, b) =>
+                            a.weighedAt.getTime() - b.weighedAt.getTime(),
+                    ),
+            );
+            return { previous };
+        },
+        onError: (err, _vars, ctx) => {
+            if (ctx?.previous) {
+                utils.weight.getWeightHistory.setData(
+                    { petId: pet.id },
+                    ctx.previous,
+                );
+            }
+            toast.error(err.message);
+        },
+        onSuccess: () => {
             setOpen(false);
             setWeight("");
             setRecordedAt("");
             toast.success(`Weight saved for ${pet.name}`);
         },
-        onError: (err) => toast.error(err.message),
+        onSettled: () => {
+            void utils.weight.getWeightHistory.invalidate({ petId: pet.id });
+        },
     });
 
     function onSubmit(event: FormEvent<HTMLFormElement>) {

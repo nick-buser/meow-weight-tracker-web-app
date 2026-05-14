@@ -6,6 +6,8 @@ import { db } from "~/server/db";
 import { eatingHistory, petFood, weightHistory } from "~/server/db/schema";
 import { assertPetAccess } from "~/server/api/petAccess";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
     req: Request,
     { params }: { params: { id: string } },
