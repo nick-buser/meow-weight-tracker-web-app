@@ -14,6 +14,7 @@ import { HealthEventsCard } from "~/app/dashboard/pets/[id]/_components/health-e
 import { AppointmentsCard } from "~/app/dashboard/pets/[id]/_components/appointments-card";
 import { MedsCard } from "~/app/dashboard/pets/[id]/_components/meds-card";
 import { NotesCard } from "~/app/dashboard/pets/[id]/_components/notes-card";
+import { TimelineCard } from "~/app/dashboard/pets/[id]/_components/timeline-card";
 import { ImportWeightCard } from "~/app/dashboard/pets/[id]/_components/import-weight-card";
 import { DeletePetCard } from "~/app/dashboard/pets/[id]/_components/delete-pet-card";
 import { PetAlerts } from "~/app/dashboard/_components/pet-alerts";
@@ -81,6 +82,7 @@ export default async function PetDetailPage({
             <AppointmentsCard petId={pet.id} canEdit={pet.role !== "Viewer"} />
             <MedsCard petId={pet.id} canEdit={pet.role !== "Viewer"} />
             <NotesCard petId={pet.id} canEdit={pet.role !== "Viewer"} />
+            <TimelineCard petId={pet.id} />
             <ImportWeightCard
                 petId={pet.id}
                 canEdit={pet.role !== "Viewer"}
