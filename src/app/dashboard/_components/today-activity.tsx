@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Trash2 } from "lucide-react";
+import { Activity, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
@@ -12,6 +12,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { EmptyState } from "~/components/ui/empty-state";
 import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
 
@@ -70,9 +71,11 @@ export function TodayActivity({
                         <Skeleton className="h-12 w-full" />
                     </div>
                 ) : today.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No activity logged today yet.
-                    </p>
+                    <EmptyState
+                        icon={Activity}
+                        title="Nothing logged today"
+                        description="Record a walk or play session to track it here."
+                    />
                 ) : (
                     <ul className="space-y-2">
                         {today.map((row) => (

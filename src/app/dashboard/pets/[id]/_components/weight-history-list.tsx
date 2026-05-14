@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Scale, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
@@ -13,6 +13,7 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { EmptyState } from "~/components/ui/empty-state";
 import { useWeightUnit } from "~/hooks/use-weight-unit";
 import { formatWeight, toKg } from "~/lib/units";
 import { api } from "~/trpc/react";
@@ -42,9 +43,11 @@ export function WeightHistoryList({
                 {isLoading ? (
                     <p className="text-sm text-muted-foreground">Loading…</p>
                 ) : sorted.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No readings yet.
-                    </p>
+                    <EmptyState
+                        icon={Scale}
+                        title="No weight readings yet"
+                        description="Log a weight and it'll appear here."
+                    />
                 ) : (
                     <ul className="divide-y">
                         {sorted.map((row) => (

@@ -1,6 +1,9 @@
 "use client";
 
+import { Utensils } from "lucide-react";
+
 import { Card, CardContent } from "~/components/ui/card";
+import { EmptyState } from "~/components/ui/empty-state";
 import { api } from "~/trpc/react";
 
 export function FoodList() {
@@ -12,8 +15,12 @@ export function FoodList() {
     if (!data || data.length === 0) {
         return (
             <Card>
-                <CardContent className="p-6 text-sm text-muted-foreground">
-                    No foods yet. Add the first one on the right.
+                <CardContent className="p-2">
+                    <EmptyState
+                        icon={Utensils}
+                        title="No foods yet"
+                        description="Add your first food using the form to get started."
+                    />
                 </CardContent>
             </Card>
         );

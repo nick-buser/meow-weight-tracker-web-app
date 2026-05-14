@@ -20,6 +20,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "~/components/ui/dialog";
+import { EmptyState } from "~/components/ui/empty-state";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
@@ -174,9 +175,11 @@ export function HealthEventsCard({
                 {isLoading ? (
                     <p className="text-sm text-muted-foreground">Loading…</p>
                 ) : !data || data.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No health events logged yet.
-                    </p>
+                    <EmptyState
+                        icon={HeartPulse}
+                        title="No health events yet"
+                        description="Log vet visits, vaccinations, symptoms, and more."
+                    />
                 ) : (
                     <ul className="divide-y">
                         {data.map((row) => (
