@@ -2,12 +2,17 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Cat, Plus, Utensils } from "lucide-react";
+import { Cat, Plus, Settings, Utensils } from "lucide-react";
 
 import { cn } from "~/lib/utils";
 
 const TABS = [
-    { href: "/dashboard", label: "Pets", icon: Cat, match: /^\/dashboard(?!\/foods)/ },
+    {
+        href: "/dashboard",
+        label: "Pets",
+        icon: Cat,
+        match: /^\/dashboard(?!\/foods|\/settings)/,
+    },
     {
         href: "/dashboard/pets/new",
         label: "Add",
@@ -20,6 +25,12 @@ const TABS = [
         icon: Utensils,
         match: /^\/dashboard\/foods/,
     },
+    {
+        href: "/dashboard/settings",
+        label: "Settings",
+        icon: Settings,
+        match: /^\/dashboard\/settings/,
+    },
 ] as const;
 
 export function BottomNav() {
@@ -29,7 +40,7 @@ export function BottomNav() {
             aria-label="Primary"
             className="fixed inset-x-0 bottom-0 z-40 border-t bg-background pb-[env(safe-area-inset-bottom)] md:hidden"
         >
-            <ul className="mx-auto grid max-w-md grid-cols-3">
+            <ul className="mx-auto grid max-w-md grid-cols-4">
                 {TABS.map((tab) => {
                     const Icon = tab.icon;
                     const active = tab.match.test(pathname);
