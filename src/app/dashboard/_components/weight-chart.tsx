@@ -129,9 +129,16 @@ export function WeightChart({
                         className="h-64"
                     />
                 ) : (
-                    <div className="h-64 w-full">
+                    <div
+                        className="h-64 w-full"
+                        role="img"
+                        aria-label={`${petName}'s weight chart — ${points.length} ${
+                            points.length === 1 ? "reading" : "readings"
+                        } in the selected range, measured in ${unit}.`}
+                    >
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart
+                                accessibilityLayer
                                 data={points}
                                 margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
                             >
