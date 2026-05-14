@@ -13,6 +13,9 @@ export const env = createEnv({
       .default("development"),
     CLERK_WEBHOOK_SECRET: z.string().optional(),
     BLOB_READ_WRITE_TOKEN: z.string().optional(),
+    RESEND_API_KEY: z.string().optional(),
+    RESEND_FROM: z.string().optional(),
+    CRON_SECRET: z.string().optional(),
   },
 
   /**
@@ -33,6 +36,9 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     CLERK_WEBHOOK_SECRET: process.env.CLERK_WEBHOOK_SECRET,
     BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    RESEND_FROM: process.env.RESEND_FROM,
+    CRON_SECRET: process.env.CRON_SECRET,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
