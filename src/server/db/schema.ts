@@ -1,4 +1,5 @@
 import {
+    boolean,
     date,
     index,
     integer,
@@ -27,6 +28,23 @@ const timestamps = {
 export const users = createTable("users", {
     // Clerk user ID (e.g. user_2abc...). FK target for petPeople.userId.
     id: varchar("id", { length: 256 }).primaryKey(),
+    ...timestamps,
+});
+
+export const weightUnitEnum = pgEnum("weight_unit", ["kg", "lb"]);
+
+// Per-user display + notification settings. Kept separate from `users`
+// (which is Clerk-webhook-synced) so the webhook upsert never clobbers
+// preferences. One row per user, created lazily on first read.
+export const userPreferences = createTable("user_preferences", {
+    userId: varchar("user_id", { length: 256 })
+        .primaryKey()
+        .references(() => users.id),
+    weightUnit: weightUnitEnum("weight_unit").notNull().default("kg"),
+    timezone: varchar("timezone", { length: 64 }).notNull().default("UTC"),
+    dailyRemindersEnabled: boolean("daily_reminders_enabled")
+        .notNull()
+        .default(true),
     ...timestamps,
 });
 

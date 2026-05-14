@@ -71,6 +71,13 @@
       "when": 1778730759080,
       "tag": "0009_special_scorpion",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "6",
+      "when": 1778736751233,
+      "tag": "0010_dry_hitman",
+      "breakpoints": true
     }
   ]
 }

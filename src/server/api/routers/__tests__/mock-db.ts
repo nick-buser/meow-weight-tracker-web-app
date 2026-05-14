@@ -43,11 +43,22 @@ export function makeStubDb(scenario: StubScenario) {
     return {
         select: () => selectChain(),
         insert: () => ({
-            values: () => ({
-                returning: () =>
-                    Promise.resolve(scenario.insertRows ?? [{ id: 1 }]),
-                onConflictDoNothing: () => Promise.resolve(undefined),
-            }),
+            values: () => {
+                const rows = () =>
+                    Promise.resolve(scenario.insertRows ?? [{ id: 1 }]);
+                // Chainable + thenable: supports values().returning(),
+                // values().onConflictDoNothing() (awaited directly), and
+                // values().onConflictDoNothing().returning().
+                const valuesChain = {
+                    returning: rows,
+                    onConflictDoNothing: () => valuesChain,
+                    then: (
+                        onFulfilled?: (rows: unknown[]) => unknown,
+                        onRejected?: (reason: unknown) => unknown,
+                    ) => rows().then(onFulfilled, onRejected),
+                };
+                return valuesChain;
+            },
         }),
         update: () => ({
             set: () => ({
