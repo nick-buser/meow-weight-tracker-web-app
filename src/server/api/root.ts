@@ -8,6 +8,7 @@ import { activityRouter } from "~/server/api/routers/activity";
 import { healthRouter } from "~/server/api/routers/health";
 import { medsRouter } from "~/server/api/routers/meds";
 import { notesRouter } from "~/server/api/routers/notes";
+import { photosRouter } from "~/server/api/routers/photos";
 import { preferencesRouter } from "~/server/api/routers/preferences";
 
 /**
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
   health: healthRouter,
   meds: medsRouter,
   notes: notesRouter,
+  photos: photosRouter,
   preferences: preferencesRouter,
   account: accountRouter,
 });
