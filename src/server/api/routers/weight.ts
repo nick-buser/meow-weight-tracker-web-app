@@ -1,5 +1,6 @@
 import { asc, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db } from "~/server/db";
@@ -106,5 +107,40 @@ export const weightRouter = createTRPCRouter({
                 .delete(weightHistory)
                 .where(eq(weightHistory.id, input.entryId));
             return { ok: true as const };
+        }),
+
+    bulkImport: protectedProcedure
+        .input(
+            z.object({
+                petId: z.number().int().positive(),
+                entries: z
+                    .array(
+                        z.object({
+                            weighedAt: z.date(),
+                            weight: z.number().positive(),
+                        }),
+                    )
+                    .min(1)
+                    .max(1000),
+            }),
+        )
+        .mutation(async ({ ctx, input }) => {
+            const role = await assertPetAccess(ctx.db, ctx.userId, input.petId);
+            if (role === "Viewer") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Viewer role cannot import entries.",
+                });
+            }
+            const rows = input.entries.map((e) => ({
+                petId: input.petId,
+                weight: e.weight,
+                weighedAt: e.weighedAt,
+            }));
+            const inserted = await ctx.db
+                .insert(weightHistory)
+                .values(rows)
+                .returning({ id: weightHistory.id });
+            return { inserted: inserted.length };
         }),
 });
