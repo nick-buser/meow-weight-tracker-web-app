@@ -28,6 +28,7 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
 
     return (
         <div className="space-y-6">
+            <h1 className="sr-only">Pet dashboard</h1>
             <PetAlerts petId={selectedPet.id} petName={selectedPet.name} />
             <PetPicker
                 pets={pets}

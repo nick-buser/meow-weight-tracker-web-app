@@ -40,6 +40,7 @@ export default async function PetDetailPage({
 
     return (
         <div className="space-y-6">
+            <h1 className="sr-only">{pet.name}</h1>
             <div className="flex items-center justify-between">
                 <Button asChild variant="ghost" size="sm" className="-ml-2">
                     <Link href="/dashboard">
