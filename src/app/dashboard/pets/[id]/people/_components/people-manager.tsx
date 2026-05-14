@@ -28,14 +28,26 @@ export function PeopleManager({
 }) {
     const utils = api.useUtils();
     const people = api.pet.listPeople.useQuery({ petId });
+    const invites = api.pet.listInvites.useQuery(
+        { petId },
+        { enabled: role === "Owner" },
+    );
     const [inviteRole, setInviteRole] = useState<Role>("Editor");
     const [inviteUrl, setInviteUrl] = useState<string | null>(null);
 
     const createInvite = api.pet.createInvite.useMutation({
-        onSuccess: (invite) => {
+        onSuccess: async (invite) => {
             const url = `${window.location.origin}/accept/${invite.token}`;
             setInviteUrl(url);
+            await utils.pet.listInvites.invalidate({ petId });
             toast.success("Invite link generated");
+        },
+        onError: (err) => toast.error(err.message),
+    });
+    const revokeInvite = api.pet.revokeInvite.useMutation({
+        onSuccess: async () => {
+            await utils.pet.listInvites.invalidate({ petId });
+            toast.success("Invite revoked");
         },
         onError: (err) => toast.error(err.message),
     });
@@ -209,6 +221,75 @@ export function PeopleManager({
                                 </Button>
                             </div>
                         )}
+                    </CardContent>
+                </Card>
+            )}
+
+            {canManage && invites.data && invites.data.length > 0 && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Pending invites</CardTitle>
+                        <CardDescription>
+                            7-day expiry. Revoke to invalidate immediately.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ul className="divide-y">
+                            {invites.data.map((inv) => {
+                                const status =
+                                    inv.acceptedAt !== null
+                                        ? `accepted ${inv.acceptedAt.toLocaleDateString()}`
+                                        : inv.revokedAt !== null
+                                          ? "revoked"
+                                          : inv.expiresAt &&
+                                              inv.expiresAt.getTime() < Date.now()
+                                            ? "expired"
+                                            : inv.expiresAt
+                                              ? `expires ${inv.expiresAt.toLocaleDateString()}`
+                                              : "active";
+                                const active =
+                                    inv.acceptedAt === null &&
+                                    inv.revokedAt === null &&
+                                    (!inv.expiresAt ||
+                                        inv.expiresAt.getTime() >= Date.now());
+                                return (
+                                    <li
+                                        key={inv.token}
+                                        className="flex items-center justify-between gap-3 py-2 text-sm"
+                                    >
+                                        <div className="min-w-0">
+                                            <div className="font-medium">
+                                                {inv.role}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {status}
+                                            </div>
+                                        </div>
+                                        {active && (
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="outline"
+                                                disabled={revokeInvite.isPending}
+                                                onClick={() => {
+                                                    if (
+                                                        !confirm(
+                                                            "Revoke this invite?",
+                                                        )
+                                                    )
+                                                        return;
+                                                    revokeInvite.mutate({
+                                                        token: inv.token,
+                                                    });
+                                                }}
+                                            >
+                                                Revoke
+                                            </Button>
+                                        )}
+                                    </li>
+                                );
+                            })}
+                        </ul>
                     </CardContent>
                 </Card>
             )}
