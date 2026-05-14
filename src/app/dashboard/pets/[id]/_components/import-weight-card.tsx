@@ -12,6 +12,8 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { useWeightUnit } from "~/hooks/use-weight-unit";
+import { toKg, type WeightUnit } from "~/lib/units";
 import { parseWeightCsv, type ParseResult } from "~/lib/weight-csv-parse";
 import { api } from "~/trpc/react";
 
@@ -22,8 +24,14 @@ export function ImportWeightCard({
     petId: number;
     canEdit: boolean;
 }) {
+    const preferredUnit = useWeightUnit();
     const inputRef = useRef<HTMLInputElement>(null);
     const [parsed, setParsed] = useState<ParseResult | null>(null);
+    // null = follow the user's preferred unit; set once they pick explicitly.
+    const [csvUnitOverride, setCsvUnitOverride] = useState<WeightUnit | null>(
+        null,
+    );
+    const csvUnit = csvUnitOverride ?? preferredUnit;
     const utils = api.useUtils();
     const bulkImport = api.weight.bulkImport.useMutation({
         onSuccess: async ({ inserted }) => {
@@ -48,7 +56,9 @@ export function ImportWeightCard({
             petId,
             entries: parsed.rows.map((r) => ({
                 weighedAt: r.weighedAt,
-                weight: r.weight,
+                // CSV values are interpreted in the selected unit and
+                // stored canonically as kg.
+                weight: toKg(r.weight, csvUnit),
             })),
         });
     }
@@ -75,6 +85,22 @@ export function ImportWeightCard({
                     }}
                     className="text-sm"
                 />
+                <div className="flex items-center gap-2 text-sm">
+                    <label htmlFor="csv-unit" className="text-muted-foreground">
+                        CSV weights are in
+                    </label>
+                    <select
+                        id="csv-unit"
+                        value={csvUnit}
+                        onChange={(e) =>
+                            setCsvUnitOverride(e.target.value as WeightUnit)
+                        }
+                        className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                    >
+                        <option value="kg">kilograms (kg)</option>
+                        <option value="lb">pounds (lb)</option>
+                    </select>
+                </div>
                 {parsed && (
                     <div className="space-y-2 text-sm">
                         <p>

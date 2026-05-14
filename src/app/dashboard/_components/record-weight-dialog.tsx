@@ -22,12 +22,15 @@ import {
 } from "~/components/ui/dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { useWeightUnit } from "~/hooks/use-weight-unit";
+import { toKg } from "~/lib/units";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/react";
 
 type Pet = RouterOutputs["pet"]["getPets"][number];
 
 export function RecordWeightDialog({ pet }: { pet: Pet }) {
+    const unit = useWeightUnit();
     const [open, setOpen] = useState(false);
     const [weight, setWeight] = useState("");
     const [recordedAt, setRecordedAt] = useState("");
@@ -87,7 +90,8 @@ export function RecordWeightDialog({ pet }: { pet: Pet }) {
         if (!Number.isFinite(numeric) || numeric <= 0) return;
         recordWeight.mutate({
             petId: pet.id,
-            weight: numeric,
+            // Stored canonically as kg; the form collects the chosen unit.
+            weight: toKg(numeric, unit),
             ...(recordedAt ? { recordedAt: new Date(recordedAt) } : {}),
         });
     }
@@ -117,7 +121,7 @@ export function RecordWeightDialog({ pet }: { pet: Pet }) {
                     </DialogHeader>
 
                     <div className="space-y-2">
-                        <Label htmlFor="weight">Weight</Label>
+                        <Label htmlFor="weight">Weight ({unit})</Label>
                         <Input
                             id="weight"
                             type="number"
@@ -128,7 +132,7 @@ export function RecordWeightDialog({ pet }: { pet: Pet }) {
                             autoFocus
                             value={weight}
                             onChange={(e) => setWeight(e.target.value)}
-                            placeholder="5.4"
+                            placeholder={unit === "lb" ? "11.9" : "5.4"}
                         />
                     </div>
 

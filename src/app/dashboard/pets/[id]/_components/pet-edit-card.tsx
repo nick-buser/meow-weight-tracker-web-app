@@ -15,19 +15,24 @@ import {
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { PetAvatar } from "~/components/ui/pet-avatar";
+import { useWeightUnit } from "~/hooks/use-weight-unit";
+import { formatWeight, toKg } from "~/lib/units";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/react";
 
 type Pet = RouterOutputs["pet"]["getPet"];
 
 export function PetEditCard({ pet }: { pet: Pet }) {
+    const unit = useWeightUnit();
     const [editing, setEditing] = useState(false);
     const [name, setName] = useState(pet.name);
     const [species, setSpecies] = useState(pet.species);
     const [gender, setGender] = useState(pet.gender);
     const [birthDate, setBirthDate] = useState(pet.birthDate ?? "");
     const [goalWeight, setGoalWeight] = useState(
-        pet.goalWeight !== null ? String(pet.goalWeight) : "",
+        pet.goalWeight !== null
+            ? formatWeight(pet.goalWeight, unit, { withUnit: false })
+            : "",
     );
     const [dailyKcalTarget, setDailyKcalTarget] = useState(
         pet.dailyKcalTarget !== null ? String(pet.dailyKcalTarget) : "",
@@ -74,9 +79,24 @@ export function PetEditCard({ pet }: { pet: Pet }) {
         onError: (err) => toast.error(err.message),
     });
 
+    function startEditing() {
+        // Seed the goal-weight field in the current unit, even if
+        // preferences loaded after this card first mounted.
+        setGoalWeight(
+            pet.goalWeight !== null
+                ? formatWeight(pet.goalWeight, unit, { withUnit: false })
+                : "",
+        );
+        setEditing(true);
+    }
+
     function onSubmit(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
-        const goal = goalWeight.trim() ? Number(goalWeight) : null;
+        const goalInUnit = goalWeight.trim() ? Number(goalWeight) : null;
+        const goal =
+            goalInUnit !== null && Number.isFinite(goalInUnit)
+                ? toKg(goalInUnit, unit)
+                : null;
         const kcal = dailyKcalTarget.trim() ? Number(dailyKcalTarget) : null;
         updatePet.mutate({
             petId: pet.id,
@@ -125,7 +145,7 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                         type="button"
                         variant="outline"
                         size="sm"
-                        onClick={() => setEditing(true)}
+                        onClick={startEditing}
                     >
                         <Pencil className="mr-1 h-3.5 w-3.5" />
                         Edit
@@ -184,7 +204,9 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                         </div>
                         <div className="grid grid-cols-2 gap-2">
                             <div className="space-y-1">
-                                <Label htmlFor="edit-goal">Goal weight</Label>
+                                <Label htmlFor="edit-goal">
+                                    Goal weight ({unit})
+                                </Label>
                                 <Input
                                     id="edit-goal"
                                     type="number"
