@@ -21,6 +21,8 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
+import { useWeightUnit } from "~/hooks/use-weight-unit";
+import { formatWeight, fromKg } from "~/lib/units";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
@@ -41,6 +43,7 @@ export function WeightChart({
     goalWeight?: number | null;
 }) {
     const [range, setRange] = useState<Range>("90d");
+    const unit = useWeightUnit();
     const { data, isLoading } = api.weight.getWeightHistory.useQuery({ petId });
     const events = api.health.getHistory.useQuery({ petId });
 
@@ -57,7 +60,7 @@ export function WeightChart({
 
     const points = visible.map((row) => ({
         t: row.weighedAt.getTime(),
-        weight: row.weight,
+        weight: fromKg(row.weight, unit),
     }));
 
     const visibleEvents = useMemo(() => {
@@ -91,7 +94,10 @@ export function WeightChart({
                     <CardTitle>{petName}&apos;s weight</CardTitle>
                     <CardDescription>
                         {data && data.length > 0
-                            ? `Latest: ${data[data.length - 1]!.weight.toFixed(2)}`
+                            ? `Latest: ${formatWeight(
+                                  data[data.length - 1]!.weight,
+                                  unit,
+                              )}`
                             : "No readings yet"}
                     </CardDescription>
                 </div>
@@ -152,7 +158,7 @@ export function WeightChart({
                                         new Date(Number(t)).toLocaleString()
                                     }
                                     formatter={(value) => [
-                                        Number(value).toFixed(2),
+                                        `${Number(value).toFixed(2)} ${unit}`,
                                         "Weight",
                                     ]}
                                 />
@@ -166,11 +172,14 @@ export function WeightChart({
                                 />
                                 {goalWeight !== null && (
                                     <ReferenceLine
-                                        y={goalWeight}
+                                        y={fromKg(goalWeight, unit)}
                                         stroke="hsl(var(--destructive))"
                                         strokeDasharray="4 4"
                                         label={{
-                                            value: `Goal ${goalWeight.toFixed(2)}`,
+                                            value: `Goal ${formatWeight(
+                                                goalWeight,
+                                                unit,
+                                            )}`,
                                             position: "right",
                                             fontSize: 11,
                                             fill: "hsl(var(--destructive))",
