@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Utensils } from "lucide-react";
 
 import {
     Card,
@@ -10,6 +11,7 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { FeedingRowActions } from "~/app/dashboard/_components/feeding-row-actions";
+import { EmptyState } from "~/components/ui/empty-state";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/react";
 
@@ -40,9 +42,11 @@ export function FeedingHistoryList({
                 {isLoading ? (
                     <p className="text-sm text-muted-foreground">Loading…</p>
                 ) : grouped.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No feedings recorded yet.
-                    </p>
+                    <EmptyState
+                        icon={Utensils}
+                        title="No feedings recorded yet"
+                        description="Logged meals will be grouped by day here."
+                    />
                 ) : (
                     <div className="space-y-5">
                         {grouped.map(({ dayKey, dayLabel, items, totalKcal }) => (

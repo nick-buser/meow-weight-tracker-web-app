@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Scale } from "lucide-react";
 import {
     CartesianGrid,
     Line,
@@ -21,6 +22,7 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
+import { EmptyState } from "~/components/ui/empty-state";
 import { useWeightUnit } from "~/hooks/use-weight-unit";
 import { formatWeight, fromKg } from "~/lib/units";
 import { cn } from "~/lib/utils";
@@ -120,9 +122,12 @@ export function WeightChart({
                 {isLoading ? (
                     <Skeleton className="h-64 w-full" />
                 ) : points.length === 0 ? (
-                    <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-                        No weight readings in this range yet.
-                    </div>
+                    <EmptyState
+                        icon={Scale}
+                        title="No readings in this range"
+                        description="Try a wider range, or log a weight to get started."
+                        className="h-64"
+                    />
                 ) : (
                     <div className="h-64 w-full">
                         <ResponsiveContainer width="100%" height="100%">
