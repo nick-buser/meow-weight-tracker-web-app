@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ChevronLeft, Users } from "lucide-react";
+import { ChevronLeft, FileText, Users } from "lucide-react";
 import { TRPCError } from "@trpc/server";
 
 import { Button } from "~/components/ui/button";
@@ -51,12 +51,20 @@ export default async function PetDetailPage({
                         Dashboard
                     </Link>
                 </Button>
-                <Button asChild variant="outline" size="sm">
-                    <Link href={`/dashboard/pets/${pet.id}/people`}>
-                        <Users className="mr-1 h-3.5 w-3.5" />
-                        People
-                    </Link>
-                </Button>
+                <div className="flex gap-2">
+                    <Button asChild variant="outline" size="sm">
+                        <Link href={`/dashboard/pets/${pet.id}/report`}>
+                            <FileText className="mr-1 h-3.5 w-3.5" />
+                            Report
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="sm">
+                        <Link href={`/dashboard/pets/${pet.id}/people`}>
+                            <Users className="mr-1 h-3.5 w-3.5" />
+                            People
+                        </Link>
+                    </Button>
+                </div>
             </div>
             <PetAlerts petId={pet.id} petName={pet.name} />
             <PetEditCard pet={pet} />
