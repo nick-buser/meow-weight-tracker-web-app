@@ -11,6 +11,7 @@ import {
     updateAppointmentInput,
 } from "~/schema/updateAppointmentInput";
 import { assertPetAccess } from "~/server/api/petAccess";
+import { enforceRateLimit } from "~/server/api/ratelimit";
 
 async function loadAppointmentPetId(
     database: typeof db,
@@ -45,6 +46,12 @@ export const appointmentsRouter = createTRPCRouter({
     create: protectedProcedure
         .input(createAppointmentInput)
         .mutation(async ({ ctx, input }) => {
+            await enforceRateLimit(
+                "createAppointment",
+                ctx.userId,
+                20,
+                "1 h",
+            );
             const role = await assertPetAccess(
                 ctx.db,
                 ctx.userId,

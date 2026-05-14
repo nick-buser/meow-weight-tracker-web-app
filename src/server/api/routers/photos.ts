@@ -9,6 +9,7 @@ import { type db } from "~/server/db";
 import { petPhotos, pets } from "~/server/db/schema";
 import { addPetPhotoInput } from "~/schema/addPetPhotoInput";
 import { assertPetAccess } from "~/server/api/petAccess";
+import { enforceRateLimit } from "~/server/api/ratelimit";
 
 async function loadPhoto(database: typeof db, photoId: number) {
     const [row] = await database
@@ -40,6 +41,7 @@ export const photosRouter = createTRPCRouter({
     add: protectedProcedure
         .input(addPetPhotoInput)
         .mutation(async ({ ctx, input }) => {
+            await enforceRateLimit("addPhoto", ctx.userId, 60, "1 h");
             const role = await assertPetAccess(ctx.db, ctx.userId, input.petId);
             if (role === "Viewer") {
                 throw new TRPCError({
