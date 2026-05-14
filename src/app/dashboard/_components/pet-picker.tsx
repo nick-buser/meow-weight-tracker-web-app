@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { PetAvatar } from "~/components/ui/pet-avatar";
+import { PetCardStreak } from "~/app/dashboard/_components/pet-card-streak";
 import { cn } from "~/lib/utils";
 import { type RouterOutputs } from "~/trpc/react";
 
@@ -51,8 +52,13 @@ export function PetPicker({
                                         name={pet.name}
                                         photoUrl={pet.photoUrl}
                                     />
-                                    <div>
-                                        <div className="font-medium">{pet.name}</div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex items-center gap-2">
+                                            <span className="truncate font-medium">
+                                                {pet.name}
+                                            </span>
+                                            <PetCardStreak petId={pet.id} />
+                                        </div>
                                         <div className="text-xs text-muted-foreground">
                                             {[pet.species, ageLabel(pet.birthDate)]
                                                 .filter(Boolean)

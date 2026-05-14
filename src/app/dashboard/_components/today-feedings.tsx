@@ -10,6 +10,7 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { FeedingRowActions } from "~/app/dashboard/_components/feeding-row-actions";
+import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
@@ -88,7 +89,10 @@ export function TodayFeedings({
             )}
             <CardContent>
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <div className="space-y-2">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                    </div>
                 ) : today.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                         No feedings logged today yet.
