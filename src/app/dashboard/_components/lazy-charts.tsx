@@ -41,3 +41,11 @@ export const WeightStatsCard = dynamic(
         })),
     { ssr: false, loading: () => <Skeleton className="h-32 w-full" /> },
 );
+
+export const WeightComparison = dynamic(
+    () =>
+        import("./weight-comparison").then((m) => ({
+            default: m.WeightComparison,
+        })),
+    { ssr: false, loading: () => <Skeleton className="h-96 w-full" /> },
+);

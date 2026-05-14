@@ -1,10 +1,10 @@
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db } from "~/server/db";
-import { weightHistory } from "~/server/db/schema";
+import { petPeople, pets, weightHistory } from "~/server/db/schema";
 import { getWeightHistoryInput } from "~/schema/getPetWeightInput";
 import { recordWeightInput } from "~/schema/recordPetWeightInput";
 import {
@@ -65,6 +65,59 @@ export const weightRouter = createTRPCRouter({
                 .where(eq(weightHistory.petId, input.petId))
                 .orderBy(asc(weightHistory.weighedAt));
         }),
+
+    // Weight series for every non-deleted pet the user can access, for the
+    // multi-pet comparison view. The petPeople join scopes to the user, so
+    // no per-pet assertPetAccess is needed.
+    getComparison: protectedProcedure.query(async ({ ctx }) => {
+        const userPets = await ctx.db
+            .select({
+                id: pets.id,
+                name: pets.name,
+                goalWeight: pets.goalWeight,
+            })
+            .from(pets)
+            .innerJoin(petPeople, eq(pets.id, petPeople.petId))
+            .where(
+                and(
+                    eq(petPeople.userId, ctx.userId),
+                    isNull(pets.deletedAt),
+                ),
+            );
+        if (userPets.length === 0) return [];
+
+        const rows = await ctx.db
+            .select({
+                petId: weightHistory.petId,
+                weighedAt: weightHistory.weighedAt,
+                weight: weightHistory.weight,
+            })
+            .from(weightHistory)
+            .where(
+                inArray(
+                    weightHistory.petId,
+                    userPets.map((p) => p.id),
+                ),
+            )
+            .orderBy(asc(weightHistory.weighedAt));
+
+        const pointsByPet = new Map<
+            number,
+            { weighedAt: Date; weight: number }[]
+        >();
+        for (const row of rows) {
+            const list = pointsByPet.get(row.petId) ?? [];
+            list.push({ weighedAt: row.weighedAt, weight: row.weight });
+            pointsByPet.set(row.petId, list);
+        }
+
+        return userPets.map((p) => ({
+            petId: p.id,
+            petName: p.name,
+            goalWeight: p.goalWeight,
+            points: pointsByPet.get(p.id) ?? [],
+        }));
+    }),
 
     updateEntry: protectedProcedure
         .input(updateWeightEntryInput)

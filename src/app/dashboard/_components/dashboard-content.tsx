@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ChevronRight } from "lucide-react";
+import { BarChart3, ChevronRight } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
 import {
@@ -35,7 +35,15 @@ export function DashboardContent({ pets }: { pets: Pet[] }) {
                 selectedId={selectedPet.id}
                 onSelect={setSelectedId}
             />
-            <div className="flex justify-end">
+            <div className="flex justify-end gap-1">
+                {pets.length > 1 && (
+                    <Button asChild variant="ghost" size="sm">
+                        <Link href="/dashboard/compare">
+                            <BarChart3 className="mr-1 h-4 w-4" />
+                            Compare weights
+                        </Link>
+                    </Button>
+                )}
                 <Button asChild variant="ghost" size="sm">
                     <Link href={`/dashboard/pets/${selectedPet.id}`}>
                         {selectedPet.name}&apos;s details
