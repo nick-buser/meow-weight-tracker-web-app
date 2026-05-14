@@ -27,6 +27,7 @@
     "@trpc/client": "next",
     "@trpc/react-query": "next",
     "@trpc/server": "next",
+    "@vercel/blob": "^2.3.3",
     "@vercel/postgres": "^0.8.0",
     "@vercel/speed-insights": "^1.0.12",
     "class-variance-authority": "^0.7.1",
