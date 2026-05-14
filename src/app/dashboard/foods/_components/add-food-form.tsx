@@ -83,7 +83,7 @@ export function AddFoodForm() {
                     placeholder="3.65"
                 />
             </div>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 <MacroField id="food-p" label="Protein %" value={protein} onChange={setProtein} />
                 <MacroField id="food-f" label="Fat %" value={fat} onChange={setFat} />
                 <MacroField id="food-c" label="Carbs %" value={carbs} onChange={setCarbs} />

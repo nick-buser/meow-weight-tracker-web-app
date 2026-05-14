@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
+import { Download } from "lucide-react";
 import { toast } from "sonner";
 
+import { Button } from "~/components/ui/button";
 import {
     Card,
     CardContent,
@@ -163,6 +165,24 @@ export function SettingsForm() {
                             </span>
                         </span>
                     </label>
+                </CardContent>
+            </Card>
+
+            <Card>
+                <CardHeader>
+                    <CardTitle>Your data</CardTitle>
+                    <CardDescription>
+                        Download everything in your account — every pet you
+                        can see and its full history — as a JSON file.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Button asChild variant="outline" size="sm">
+                        <a href="/api/account/export" download>
+                            <Download className="mr-2 h-3.5 w-3.5" />
+                            Export my data
+                        </a>
+                    </Button>
                 </CardContent>
             </Card>
         </div>
