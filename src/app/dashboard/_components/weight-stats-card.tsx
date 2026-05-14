@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUp, LineChart } from "lucide-react";
 
 import {
     Card,
@@ -10,6 +10,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { EmptyState } from "~/components/ui/empty-state";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useWeightUnit } from "~/hooks/use-weight-unit";
 import { formatWeight, fromKg, type WeightUnit } from "~/lib/units";
@@ -49,9 +50,11 @@ export function WeightStatsCard({
                         <Skeleton className="h-12" />
                     </div>
                 ) : !stats ? (
-                    <p className="text-sm text-muted-foreground">
-                        Log at least two weights to see a trend.
-                    </p>
+                    <EmptyState
+                        icon={LineChart}
+                        title="Not enough data yet"
+                        description="Log at least two weight readings and the trend will show up here."
+                    />
                 ) : (
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
                         <Stat

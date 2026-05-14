@@ -1,4 +1,5 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { accountRouter } from "~/server/api/routers/account";
 import { petRouter } from "~/server/api/routers/pet";
 import { weightRouter } from "~/server/api/routers/weight";
 import { feedingRouter } from "~/server/api/routers/feeding";
@@ -24,6 +25,7 @@ export const appRouter = createTRPCRouter({
   meds: medsRouter,
   notes: notesRouter,
   preferences: preferencesRouter,
+  account: accountRouter,
 });
 
 // export type definition of API

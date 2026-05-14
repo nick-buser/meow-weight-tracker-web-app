@@ -12,6 +12,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { EmptyState } from "~/components/ui/empty-state";
 import { api } from "~/trpc/react";
 
 export function NotesCard({
@@ -84,9 +85,11 @@ export function NotesCard({
                 {isLoading ? (
                     <p className="text-sm text-muted-foreground">Loading…</p>
                 ) : !data || data.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No notes yet.
-                    </p>
+                    <EmptyState
+                        icon={NotebookPen}
+                        title="No notes yet"
+                        description="Jot down anything worth remembering about this pet."
+                    />
                 ) : (
                     <ul className="space-y-3">
                         {data.map((row) => (
