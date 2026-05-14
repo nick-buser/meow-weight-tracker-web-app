@@ -11,6 +11,7 @@ import { type inferRouterInputs, type inferRouterOutputs } from "@trpc/server";
 import { useState } from "react";
 import SuperJSON from "superjson";
 import { toast } from "sonner";
+import * as Sentry from "@sentry/nextjs";
 
 import { type AppRouter } from "~/server/api/root";
 
@@ -23,6 +24,9 @@ const createQueryClient = () =>
                 const message =
                     err instanceof Error ? err.message : "Couldn't load data";
                 toast.error(message);
+                Sentry.captureException(err, {
+                    tags: { source: "react-query" },
+                });
             },
         }),
     });
