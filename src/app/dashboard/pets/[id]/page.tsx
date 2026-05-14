@@ -10,6 +10,7 @@ import { WeightHistoryList } from "~/app/dashboard/pets/[id]/_components/weight-
 import { ExportCard } from "~/app/dashboard/pets/[id]/_components/export-card";
 import { FeedingHeatmapCard } from "~/app/dashboard/pets/[id]/_components/feeding-heatmap-card";
 import { HealthEventsCard } from "~/app/dashboard/pets/[id]/_components/health-events-card";
+import { MedsCard } from "~/app/dashboard/pets/[id]/_components/meds-card";
 import { NotesCard } from "~/app/dashboard/pets/[id]/_components/notes-card";
 import { ImportWeightCard } from "~/app/dashboard/pets/[id]/_components/import-weight-card";
 import { DeletePetCard } from "~/app/dashboard/pets/[id]/_components/delete-pet-card";
@@ -67,6 +68,7 @@ export default async function PetDetailPage({
             <FeedingHeatmapCard petId={pet.id} />
             <FeedingHistoryList petId={pet.id} canEdit={pet.role !== "Viewer"} />
             <HealthEventsCard petId={pet.id} canEdit={pet.role !== "Viewer"} />
+            <MedsCard petId={pet.id} canEdit={pet.role !== "Viewer"} />
             <NotesCard petId={pet.id} canEdit={pet.role !== "Viewer"} />
             <ImportWeightCard
                 petId={pet.id}
