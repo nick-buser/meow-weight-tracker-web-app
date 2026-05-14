@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Trash2 } from "lucide-react";
+import { Copy, Trash2, Users } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
@@ -12,6 +12,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { EmptyState } from "~/components/ui/empty-state";
 import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
 
@@ -85,9 +86,11 @@ export function PeopleManager({
                     {people.isLoading ? (
                         <p className="text-sm text-muted-foreground">Loading…</p>
                     ) : !people.data || people.data.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">
-                            No one yet.
-                        </p>
+                        <EmptyState
+                            icon={Users}
+                            title="Just you so far"
+                            description="Share an invite link below to add other people."
+                        />
                     ) : (
                         <ul className="divide-y">
                             {people.data.map((p) => {
