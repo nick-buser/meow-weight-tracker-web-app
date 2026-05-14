@@ -12,6 +12,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
 
 export function TodayActivity({
@@ -64,7 +65,10 @@ export function TodayActivity({
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <div className="space-y-2">
+                        <Skeleton className="h-12 w-full" />
+                        <Skeleton className="h-12 w-full" />
+                    </div>
                 ) : today.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                         No activity logged today yet.

@@ -10,6 +10,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 import { computeWeightStats } from "~/lib/weight-stats";
 import { api } from "~/trpc/react";
@@ -38,7 +39,12 @@ export function WeightStatsCard({
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+                        <Skeleton className="h-12" />
+                        <Skeleton className="h-12" />
+                        <Skeleton className="h-12" />
+                        <Skeleton className="h-12" />
+                    </div>
                 ) : !stats ? (
                     <p className="text-sm text-muted-foreground">
                         Log at least two weights to see a trend.
