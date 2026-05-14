@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
+import { ThemeToggle } from "~/components/theme-toggle";
+
 export function TopNav() {
     return (
         <nav className="flex w-full items-center justify-between border-b px-4 py-3">
@@ -27,9 +29,11 @@ export function TopNav() {
                     >
                         Deleted
                     </Link>
+                    <ThemeToggle />
                     <UserButton afterSignOutUrl="/" />
                 </SignedIn>
                 <SignedOut>
+                    <ThemeToggle />
                     <SignInButton />
                 </SignedOut>
             </div>
