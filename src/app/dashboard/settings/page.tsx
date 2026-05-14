@@ -1,3 +1,4 @@
+import { DeleteAccountCard } from "~/app/dashboard/settings/_components/delete-account-card";
 import { SettingsForm } from "~/app/dashboard/settings/_components/settings-form";
 
 export const metadata = {
@@ -14,6 +15,7 @@ export default function SettingsPage() {
                 </p>
             </div>
             <SettingsForm />
+            <DeleteAccountCard />
         </div>
     );
 }
