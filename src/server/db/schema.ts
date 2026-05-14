@@ -258,3 +258,37 @@ export const petPhotos = createTable(
         petIdx: index("pet_photos_pet_id_idx").on(table.petId),
     }),
 );
+
+export const appointmentStatusEnum = pgEnum("appointment_status", [
+    "Scheduled",
+    "Completed",
+    "Cancelled",
+]);
+
+// Upcoming (and past) vet/grooming appointments. Distinct from
+// health_events, which is a log of things that already happened — an
+// appointment has a forward-looking schedule and a lifecycle status.
+export const petAppointments = createTable(
+    "pet_appointments",
+    {
+        id: serial("id").primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        title: varchar("title", { length: 256 }).notNull(),
+        appointmentType: varchar("appointment_type", { length: 64 }).notNull(),
+        scheduledFor: timestamp("scheduled_for", {
+            withTimezone: true,
+        }).notNull(),
+        location: varchar("location", { length: 256 }),
+        notes: varchar("notes", { length: 2048 }),
+        status: appointmentStatusEnum("status").notNull().default("Scheduled"),
+        createdBy: varchar("created_by", { length: 256 })
+            .references(() => users.id)
+            .notNull(),
+        ...timestamps,
+    },
+    (table) => ({
+        petIdx: index("pet_appointments_pet_id_idx").on(table.petId),
+    }),
+);

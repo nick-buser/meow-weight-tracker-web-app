@@ -1,5 +1,6 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { accountRouter } from "~/server/api/routers/account";
+import { appointmentsRouter } from "~/server/api/routers/appointments";
 import { petRouter } from "~/server/api/routers/pet";
 import { weightRouter } from "~/server/api/routers/weight";
 import { feedingRouter } from "~/server/api/routers/feeding";
@@ -26,6 +27,7 @@ export const appRouter = createTRPCRouter({
   meds: medsRouter,
   notes: notesRouter,
   photos: photosRouter,
+  appointments: appointmentsRouter,
   preferences: preferencesRouter,
   account: accountRouter,
 });
