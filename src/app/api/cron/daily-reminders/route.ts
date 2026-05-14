@@ -1,11 +1,12 @@
 import { clerkClient } from "@clerk/nextjs/server";
-import { desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, gte, isNull, lt } from "drizzle-orm";
 import { Resend } from "resend";
 
 import { env } from "~/env";
 import { db } from "~/server/db";
 import {
     eatingHistory,
+    petAppointments,
     petPeople,
     pets,
     userPreferences,
@@ -14,6 +15,28 @@ import {
 export const dynamic = "force-dynamic";
 
 const HUNGRY_HOURS = 18;
+const APPOINTMENT_LOOKAHEAD_HOURS = 24;
+
+function escapeHtml(value: string): string {
+    return value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function formatInTimeZone(date: Date, timeZone: string): string {
+    try {
+        return new Intl.DateTimeFormat("en-US", {
+            dateStyle: "full",
+            timeStyle: "short",
+            timeZone,
+        }).format(date);
+    } catch {
+        return date.toUTCString();
+    }
+}
 
 type Recipient = { email: string; userId: string };
 
@@ -77,13 +100,22 @@ export async function GET(req: Request) {
     const now = Date.now();
     const cutoff = new Date(now - HUNGRY_HOURS * 3_600_000);
 
-    // Users who explicitly turned reminders off. A missing preferences row
-    // means the default (enabled), so we only need the opt-out set.
-    const optedOutRows = await db
-        .select({ userId: userPreferences.userId })
-        .from(userPreferences)
-        .where(eq(userPreferences.dailyRemindersEnabled, false));
-    const optedOut = new Set(optedOutRows.map((r) => r.userId));
+    // One pass over preferences: the opt-out set for gating reminders, and
+    // a timezone lookup so appointment times render in each user's zone. A
+    // missing preferences row means the defaults (enabled, UTC).
+    const prefRows = await db
+        .select({
+            userId: userPreferences.userId,
+            dailyRemindersEnabled: userPreferences.dailyRemindersEnabled,
+            timezone: userPreferences.timezone,
+        })
+        .from(userPreferences);
+    const optedOut = new Set(
+        prefRows.filter((r) => !r.dailyRemindersEnabled).map((r) => r.userId),
+    );
+    const timezoneByUser = new Map(
+        prefRows.map((r) => [r.userId, r.timezone]),
+    );
 
     const allPets = await db
         .select({ id: pets.id, name: pets.name })
@@ -143,5 +175,95 @@ export async function GET(req: Request) {
         summary.push({ petId: pet.id, sent, reason: "hungry" });
     }
 
-    return Response.json({ ranAt: new Date(now).toISOString(), summary });
+    // --- Upcoming appointment reminders ---------------------------------
+    // Scheduled appointments landing within the next lookahead window. The
+    // daily cadence plus a 24h window means each appointment is reminded
+    // about roughly once, the day before it happens.
+    const lookaheadEnd = new Date(
+        now + APPOINTMENT_LOOKAHEAD_HOURS * 3_600_000,
+    );
+    const upcomingAppointments = await db
+        .select({
+            id: petAppointments.id,
+            petId: petAppointments.petId,
+            petName: pets.name,
+            title: petAppointments.title,
+            appointmentType: petAppointments.appointmentType,
+            scheduledFor: petAppointments.scheduledFor,
+            location: petAppointments.location,
+        })
+        .from(petAppointments)
+        .innerJoin(pets, eq(pets.id, petAppointments.petId))
+        .where(
+            and(
+                eq(petAppointments.status, "Scheduled"),
+                isNull(pets.deletedAt),
+                gte(petAppointments.scheduledFor, new Date(now)),
+                lt(petAppointments.scheduledFor, lookaheadEnd),
+            ),
+        );
+
+    const appointmentsByPet = new Map<
+        number,
+        typeof upcomingAppointments
+    >();
+    for (const appt of upcomingAppointments) {
+        const list = appointmentsByPet.get(appt.petId) ?? [];
+        list.push(appt);
+        appointmentsByPet.set(appt.petId, list);
+    }
+
+    const appointmentSummary: {
+        appointmentId: number;
+        petId: number;
+        sent: number;
+    }[] = [];
+    for (const [petId, appts] of appointmentsByPet) {
+        const recipients = (await recipientsForPet(petId)).filter(
+            (r) => !optedOut.has(r.userId),
+        );
+        for (const appt of appts) {
+            let sent = 0;
+            for (const r of recipients) {
+                const when = formatInTimeZone(
+                    appt.scheduledFor,
+                    timezoneByUser.get(r.userId) ?? "UTC",
+                );
+                const locationLine = appt.location
+                    ? `<p>Location: ${escapeHtml(appt.location)}</p>`
+                    : "";
+                try {
+                    await resend.emails.send({
+                        from: env.RESEND_FROM,
+                        to: r.email,
+                        subject: `Upcoming appointment for ${appt.petName}: ${appt.title}`,
+                        html: `<p><strong>${escapeHtml(
+                            appt.petName,
+                        )}</strong> has an upcoming appointment:</p><p><strong>${escapeHtml(
+                            appt.title,
+                        )}</strong> (${escapeHtml(
+                            appt.appointmentType,
+                        )})<br/>${when}</p>${locationLine}<p>View it on the Meow Weight Tracker dashboard.</p>`,
+                    });
+                    sent += 1;
+                } catch (err) {
+                    console.error(
+                        `Resend appointment send failed for ${r.email}`,
+                        err,
+                    );
+                }
+            }
+            appointmentSummary.push({
+                appointmentId: appt.id,
+                petId,
+                sent,
+            });
+        }
+    }
+
+    return Response.json({
+        ranAt: new Date(now).toISOString(),
+        summary,
+        appointmentSummary,
+    });
 }
