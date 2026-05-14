@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import { Pencil } from "lucide-react";
 import { toast } from "sonner";
 
@@ -33,6 +33,33 @@ export function PetEditCard({ pet }: { pet: Pet }) {
         pet.dailyKcalTarget !== null ? String(pet.dailyKcalTarget) : "",
     );
     const [photoUrl, setPhotoUrl] = useState(pet.photoUrl ?? "");
+    const [uploading, setUploading] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    async function onUpload(file: File) {
+        setUploading(true);
+        try {
+            const form = new FormData();
+            form.set("file", file);
+            form.set("petId", String(pet.id));
+            const res = await fetch(`/api/pets/${pet.id}/photo`, {
+                method: "POST",
+                body: form,
+            });
+            if (!res.ok) {
+                const msg = await res.text();
+                toast.error(msg || "Upload failed");
+                return;
+            }
+            const data = (await res.json()) as { url: string };
+            setPhotoUrl(data.url);
+            toast.success("Photo uploaded");
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Upload failed");
+        } finally {
+            setUploading(false);
+        }
+    }
 
     const utils = api.useUtils();
     const updatePet = api.pet.updatePet.useMutation({
@@ -184,14 +211,39 @@ export function PetEditCard({ pet }: { pet: Pet }) {
                             </div>
                         </div>
                         <div className="space-y-1">
-                            <Label htmlFor="edit-photo">Photo URL</Label>
-                            <Input
-                                id="edit-photo"
-                                type="url"
-                                value={photoUrl}
-                                onChange={(e) => setPhotoUrl(e.target.value)}
-                                placeholder="https://…"
-                            />
+                            <Label htmlFor="edit-photo">Photo</Label>
+                            <div className="flex gap-2">
+                                <Input
+                                    id="edit-photo"
+                                    type="url"
+                                    value={photoUrl}
+                                    onChange={(e) => setPhotoUrl(e.target.value)}
+                                    placeholder="https://… or upload a file"
+                                />
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,image/gif"
+                                    className="hidden"
+                                    onChange={(e) => {
+                                        const f = e.target.files?.[0];
+                                        if (f) void onUpload(f);
+                                        if (fileInputRef.current)
+                                            fileInputRef.current.value = "";
+                                    }}
+                                />
+                                <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={uploading}
+                                    onClick={() =>
+                                        fileInputRef.current?.click()
+                                    }
+                                >
+                                    {uploading ? "Uploading…" : "Upload"}
+                                </Button>
+                            </div>
                         </div>
                         {updatePet.error && (
                             <p className="text-sm text-destructive">
