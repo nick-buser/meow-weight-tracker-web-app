@@ -4,13 +4,14 @@ import { Utensils } from "lucide-react";
 
 import { Card, CardContent } from "~/components/ui/card";
 import { EmptyState } from "~/components/ui/empty-state";
+import { ListSkeleton } from "~/components/ui/list-skeleton";
 import { api } from "~/trpc/react";
 
 export function FoodList() {
     const { data, isLoading } = api.food.list.useQuery();
 
     if (isLoading) {
-        return <p className="text-sm text-muted-foreground">Loading…</p>;
+        return <ListSkeleton />;
     }
     if (!data || data.length === 0) {
         return (

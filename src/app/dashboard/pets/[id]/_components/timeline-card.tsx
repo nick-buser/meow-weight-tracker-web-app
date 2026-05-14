@@ -20,6 +20,7 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { EmptyState } from "~/components/ui/empty-state";
+import { ListSkeleton } from "~/components/ui/list-skeleton";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useWeightUnit } from "~/hooks/use-weight-unit";
@@ -153,7 +154,7 @@ export function TimelineCard({ petId }: { petId: number }) {
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <ListSkeleton />
                 ) : !data || data.length === 0 ? (
                     <EmptyState
                         icon={History}

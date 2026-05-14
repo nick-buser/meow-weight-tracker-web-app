@@ -12,6 +12,7 @@ import {
 } from "~/components/ui/card";
 import { FeedingRowActions } from "~/app/dashboard/_components/feeding-row-actions";
 import { EmptyState } from "~/components/ui/empty-state";
+import { ListSkeleton } from "~/components/ui/list-skeleton";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/react";
 
@@ -40,7 +41,7 @@ export function FeedingHistoryList({
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <ListSkeleton />
                 ) : grouped.length === 0 ? (
                     <EmptyState
                         icon={Utensils}

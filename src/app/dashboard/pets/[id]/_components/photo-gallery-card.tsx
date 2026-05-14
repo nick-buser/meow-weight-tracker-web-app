@@ -22,6 +22,7 @@ import {
     DialogTrigger,
 } from "~/components/ui/dialog";
 import { EmptyState } from "~/components/ui/empty-state";
+import { Skeleton } from "~/components/ui/skeleton";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
@@ -198,7 +199,18 @@ export function PhotoGalleryCard({
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <div role="status">
+                        <span className="sr-only">Loading…</span>
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <Skeleton
+                                    key={i}
+                                    className="aspect-square w-full"
+                                    aria-hidden="true"
+                                />
+                            ))}
+                        </div>
+                    </div>
                 ) : !data || data.length === 0 ? (
                     <EmptyState
                         icon={Images}
