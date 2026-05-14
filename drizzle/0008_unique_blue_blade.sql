@@ -1,0 +1,2 @@
+ALTER TABLE "meow-weight-tracker_pet_invites" ADD COLUMN "expires_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "meow-weight-tracker_pet_invites" ADD COLUMN "revoked_at" timestamp with time zone;

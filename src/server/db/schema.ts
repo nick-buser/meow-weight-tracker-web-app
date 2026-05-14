@@ -75,6 +75,8 @@ export const petInvites = createTable(
         createdBy: varchar("created_by", { length: 256 })
             .references(() => users.id)
             .notNull(),
+        expiresAt: timestamp("expires_at", { withTimezone: true }),
+        revokedAt: timestamp("revoked_at", { withTimezone: true }),
         acceptedAt: timestamp("accepted_at", { withTimezone: true }),
         acceptedBy: varchar("accepted_by", { length: 256 }).references(
             () => users.id,
