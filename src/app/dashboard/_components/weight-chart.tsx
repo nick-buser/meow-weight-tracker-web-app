@@ -42,19 +42,47 @@ export function WeightChart({
 }) {
     const [range, setRange] = useState<Range>("90d");
     const { data, isLoading } = api.weight.getWeightHistory.useQuery({ petId });
+    const events = api.health.getHistory.useQuery({ petId });
+
+    const cutoffMs = useMemo(() => {
+        const days = RANGES.find((r) => r.value === range)?.days ?? null;
+        return days === null ? 0 : Date.now() - days * 24 * 60 * 60 * 1000;
+    }, [range]);
 
     const visible = useMemo(() => {
         if (!data) return [];
-        const days = RANGES.find((r) => r.value === range)?.days ?? null;
-        if (days === null) return data;
-        const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
-        return data.filter((row) => row.weighedAt.getTime() >= cutoff);
-    }, [data, range]);
+        if (cutoffMs === 0) return data;
+        return data.filter((row) => row.weighedAt.getTime() >= cutoffMs);
+    }, [data, cutoffMs]);
 
     const points = visible.map((row) => ({
         t: row.weighedAt.getTime(),
         weight: row.weight,
     }));
+
+    const visibleEvents = useMemo(() => {
+        if (!events.data) return [];
+        return events.data.filter(
+            (e) => cutoffMs === 0 || e.occurredAt.getTime() >= cutoffMs,
+        );
+    }, [events.data, cutoffMs]);
+
+    const eventColor = (type: string): string => {
+        switch (type) {
+            case "Vet visit":
+                return "hsl(220 80% 55%)";
+            case "Medication":
+                return "hsl(265 70% 60%)";
+            case "Vaccination":
+                return "hsl(160 65% 45%)";
+            case "Symptom":
+                return "hsl(0 70% 55%)";
+            case "Surgery":
+                return "hsl(15 80% 50%)";
+            default:
+                return "hsl(var(--muted-foreground))";
+        }
+    };
 
     return (
         <Card>
@@ -149,6 +177,21 @@ export function WeightChart({
                                         }}
                                     />
                                 )}
+                                {visibleEvents.map((e) => (
+                                    <ReferenceLine
+                                        key={e.id}
+                                        x={e.occurredAt.getTime()}
+                                        stroke={eventColor(e.eventType)}
+                                        strokeDasharray="2 4"
+                                        strokeOpacity={0.7}
+                                        label={{
+                                            value: e.eventType,
+                                            position: "insideTopLeft",
+                                            fontSize: 9,
+                                            fill: eventColor(e.eventType),
+                                        }}
+                                    />
+                                ))}
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
