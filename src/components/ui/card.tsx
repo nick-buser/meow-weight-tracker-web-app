@@ -30,10 +30,11 @@ const CardHeader = React.forwardRef<
 CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<
-    HTMLDivElement,
-    React.HTMLAttributes<HTMLDivElement>
+    HTMLHeadingElement,
+    React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
-    <div
+    // h3 so card titles land in the heading outline for screen-reader nav.
+    <h3
         ref={ref}
         className={cn(
             "text-lg font-semibold leading-none tracking-tight",
