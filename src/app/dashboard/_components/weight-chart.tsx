@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Scale } from "lucide-react";
 import {
     CartesianGrid,
     Line,
@@ -21,6 +22,9 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { Skeleton } from "~/components/ui/skeleton";
+import { EmptyState } from "~/components/ui/empty-state";
+import { useWeightUnit } from "~/hooks/use-weight-unit";
+import { formatWeight, fromKg } from "~/lib/units";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
@@ -41,6 +45,7 @@ export function WeightChart({
     goalWeight?: number | null;
 }) {
     const [range, setRange] = useState<Range>("90d");
+    const unit = useWeightUnit();
     const { data, isLoading } = api.weight.getWeightHistory.useQuery({ petId });
     const events = api.health.getHistory.useQuery({ petId });
 
@@ -57,7 +62,7 @@ export function WeightChart({
 
     const points = visible.map((row) => ({
         t: row.weighedAt.getTime(),
-        weight: row.weight,
+        weight: fromKg(row.weight, unit),
     }));
 
     const visibleEvents = useMemo(() => {
@@ -91,7 +96,10 @@ export function WeightChart({
                     <CardTitle>{petName}&apos;s weight</CardTitle>
                     <CardDescription>
                         {data && data.length > 0
-                            ? `Latest: ${data[data.length - 1]!.weight.toFixed(2)}`
+                            ? `Latest: ${formatWeight(
+                                  data[data.length - 1]!.weight,
+                                  unit,
+                              )}`
                             : "No readings yet"}
                     </CardDescription>
                 </div>
@@ -114,13 +122,23 @@ export function WeightChart({
                 {isLoading ? (
                     <Skeleton className="h-64 w-full" />
                 ) : points.length === 0 ? (
-                    <div className="flex h-64 items-center justify-center text-sm text-muted-foreground">
-                        No weight readings in this range yet.
-                    </div>
+                    <EmptyState
+                        icon={Scale}
+                        title="No readings in this range"
+                        description="Try a wider range, or log a weight to get started."
+                        className="h-64"
+                    />
                 ) : (
-                    <div className="h-64 w-full">
+                    <div
+                        className="h-64 w-full"
+                        role="img"
+                        aria-label={`${petName}'s weight chart — ${points.length} ${
+                            points.length === 1 ? "reading" : "readings"
+                        } in the selected range, measured in ${unit}.`}
+                    >
                         <ResponsiveContainer width="100%" height="100%">
                             <LineChart
+                                accessibilityLayer
                                 data={points}
                                 margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
                             >
@@ -152,7 +170,7 @@ export function WeightChart({
                                         new Date(Number(t)).toLocaleString()
                                     }
                                     formatter={(value) => [
-                                        Number(value).toFixed(2),
+                                        `${Number(value).toFixed(2)} ${unit}`,
                                         "Weight",
                                     ]}
                                 />
@@ -166,11 +184,14 @@ export function WeightChart({
                                 />
                                 {goalWeight !== null && (
                                     <ReferenceLine
-                                        y={goalWeight}
+                                        y={fromKg(goalWeight, unit)}
                                         stroke="hsl(var(--destructive))"
                                         strokeDasharray="4 4"
                                         label={{
-                                            value: `Goal ${goalWeight.toFixed(2)}`,
+                                            value: `Goal ${formatWeight(
+                                                goalWeight,
+                                                unit,
+                                            )}`,
                                             position: "right",
                                             fontSize: 11,
                                             fill: "hsl(var(--destructive))",

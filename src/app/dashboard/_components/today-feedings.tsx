@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Utensils } from "lucide-react";
 
 import {
     Card,
@@ -10,6 +11,7 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { FeedingRowActions } from "~/app/dashboard/_components/feeding-row-actions";
+import { EmptyState } from "~/components/ui/empty-state";
 import { Skeleton } from "~/components/ui/skeleton";
 import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -94,9 +96,11 @@ export function TodayFeedings({
                         <Skeleton className="h-12 w-full" />
                     </div>
                 ) : today.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No feedings logged today yet.
-                    </p>
+                    <EmptyState
+                        icon={Utensils}
+                        title="No feedings logged today"
+                        description="Log a meal to start tracking today's calories."
+                    />
                 ) : (
                     <ul className="space-y-2">
                         {today.map((row) => {

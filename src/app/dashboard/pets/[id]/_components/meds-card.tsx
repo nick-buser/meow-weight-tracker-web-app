@@ -20,6 +20,7 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "~/components/ui/dialog";
+import { EmptyState } from "~/components/ui/empty-state";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { isMedDue, nextDueAt } from "~/lib/meds-due";
@@ -137,7 +138,7 @@ export function MedsCard({
                                         placeholder="Methimazole"
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                     <div className="space-y-1">
                                         <Label htmlFor="med-dosage">
                                             Dosage
@@ -170,7 +171,7 @@ export function MedsCard({
                                         />
                                     </div>
                                 </div>
-                                <div className="grid grid-cols-2 gap-2">
+                                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                                     <div className="space-y-1">
                                         <Label htmlFor="med-starts">
                                             Starts
@@ -239,9 +240,11 @@ export function MedsCard({
                 {isLoading ? (
                     <p className="text-sm text-muted-foreground">Loading…</p>
                 ) : !data || data.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No medications yet.
-                    </p>
+                    <EmptyState
+                        icon={Pill}
+                        title="No medications yet"
+                        description="Add a recurring med to track doses and due times."
+                    />
                 ) : (
                     <ul className="divide-y">
                         {data.map((m) => {

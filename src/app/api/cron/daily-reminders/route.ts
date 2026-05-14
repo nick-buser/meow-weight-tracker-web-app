@@ -8,6 +8,7 @@ import {
     eatingHistory,
     petPeople,
     pets,
+    userPreferences,
 } from "~/server/db/schema";
 
 export const dynamic = "force-dynamic";
@@ -76,6 +77,14 @@ export async function GET(req: Request) {
     const now = Date.now();
     const cutoff = new Date(now - HUNGRY_HOURS * 3_600_000);
 
+    // Users who explicitly turned reminders off. A missing preferences row
+    // means the default (enabled), so we only need the opt-out set.
+    const optedOutRows = await db
+        .select({ userId: userPreferences.userId })
+        .from(userPreferences)
+        .where(eq(userPreferences.dailyRemindersEnabled, false));
+    const optedOut = new Set(optedOutRows.map((r) => r.userId));
+
     const allPets = await db
         .select({ id: pets.id, name: pets.name })
         .from(pets)
@@ -100,9 +109,19 @@ export async function GET(req: Request) {
         const hours = Math.floor(
             (now - lastFeeding.fedAt.getTime()) / 3_600_000,
         );
-        const recipients = await recipientsForPet(pet.id);
+        const allRecipients = await recipientsForPet(pet.id);
+        const recipients = allRecipients.filter(
+            (r) => !optedOut.has(r.userId),
+        );
         if (recipients.length === 0) {
-            summary.push({ petId: pet.id, sent: 0, reason: "no-recipients" });
+            summary.push({
+                petId: pet.id,
+                sent: 0,
+                reason:
+                    allRecipients.length > 0
+                        ? "all-opted-out"
+                        : "no-recipients",
+            });
             continue;
         }
         const subject = `${pet.name} hasn't been fed in ${hours}h`;

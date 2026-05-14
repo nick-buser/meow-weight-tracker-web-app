@@ -29,6 +29,12 @@ export function TopNav() {
                     >
                         Deleted
                     </Link>
+                    <Link
+                        href="/dashboard/settings"
+                        className="hidden text-sm text-muted-foreground hover:text-foreground md:inline"
+                    >
+                        Settings
+                    </Link>
                     <ThemeToggle />
                     <UserButton afterSignOutUrl="/" />
                 </SignedIn>

@@ -45,7 +45,13 @@ export function FeedingHeatmapCard({ petId }: { petId: number }) {
                     <Skeleton className="h-24 w-full" />
                 ) : (
                     <div className="overflow-x-auto">
-                        <div className="flex gap-[2px]">
+                        <div
+                            className="flex gap-[2px]"
+                            role="img"
+                            aria-label={`Feeding activity heatmap for the last 12 months — ${total} ${
+                                total === 1 ? "feeding" : "feedings"
+                            } logged.`}
+                        >
                             {cells.map((week, wi) => (
                                 <div
                                     key={wi}

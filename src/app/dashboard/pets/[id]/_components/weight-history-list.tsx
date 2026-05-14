@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Scale, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "~/components/ui/button";
@@ -13,6 +13,9 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
+import { EmptyState } from "~/components/ui/empty-state";
+import { useWeightUnit } from "~/hooks/use-weight-unit";
+import { formatWeight, toKg } from "~/lib/units";
 import { api } from "~/trpc/react";
 import { type RouterOutputs } from "~/trpc/react";
 
@@ -40,9 +43,11 @@ export function WeightHistoryList({
                 {isLoading ? (
                     <p className="text-sm text-muted-foreground">Loading…</p>
                 ) : sorted.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No readings yet.
-                    </p>
+                    <EmptyState
+                        icon={Scale}
+                        title="No weight readings yet"
+                        description="Log a weight and it'll appear here."
+                    />
                 ) : (
                     <ul className="divide-y">
                         {sorted.map((row) => (
@@ -69,8 +74,11 @@ function WeightRow({
     petId: number;
     canEdit: boolean;
 }) {
+    const unit = useWeightUnit();
     const [editing, setEditing] = useState(false);
-    const [weight, setWeight] = useState(String(row.weight));
+    const [weight, setWeight] = useState(
+        formatWeight(row.weight, unit, { withUnit: false }),
+    );
     const [weighedAt, setWeighedAt] = useState(toLocalInput(row.weighedAt));
     const utils = api.useUtils();
 
@@ -96,23 +104,37 @@ function WeightRow({
         if (!Number.isFinite(n) || n <= 0) return;
         updateEntry.mutate({
             entryId: row.id,
-            weight: n,
+            weight: toKg(n, unit),
             weighedAt: weighedAt ? new Date(weighedAt) : undefined,
         });
+    }
+
+    function startEditing() {
+        // Seed the form fresh so the value always matches the current unit,
+        // even if preferences loaded after this row first mounted.
+        setWeight(formatWeight(row.weight, unit, { withUnit: false }));
+        setWeighedAt(toLocalInput(row.weighedAt));
+        setEditing(true);
     }
 
     if (editing) {
         return (
             <li className="py-2">
                 <form onSubmit={onSubmit} className="grid gap-2 sm:grid-cols-[1fr_1fr_auto_auto]">
-                    <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        required
-                        value={weight}
-                        onChange={(e) => setWeight(e.target.value)}
-                    />
+                    <div className="flex items-center gap-1.5">
+                        <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            required
+                            value={weight}
+                            onChange={(e) => setWeight(e.target.value)}
+                            aria-label={`Weight in ${unit}`}
+                        />
+                        <span className="text-xs text-muted-foreground">
+                            {unit}
+                        </span>
+                    </div>
                     <Input
                         type="datetime-local"
                         value={weighedAt}
@@ -148,7 +170,9 @@ function WeightRow({
     return (
         <li className="flex items-center justify-between py-2 text-sm">
             <div>
-                <div className="font-medium">{row.weight.toFixed(2)}</div>
+                <div className="font-medium">
+                    {formatWeight(row.weight, unit)}
+                </div>
                 <div className="text-xs text-muted-foreground">
                     {row.weighedAt.toLocaleString()}
                 </div>
@@ -159,7 +183,7 @@ function WeightRow({
                         type="button"
                         size="icon"
                         variant="ghost"
-                        onClick={() => setEditing(true)}
+                        onClick={startEditing}
                         aria-label="Edit reading"
                     >
                         <Pencil className="h-3.5 w-3.5" />
