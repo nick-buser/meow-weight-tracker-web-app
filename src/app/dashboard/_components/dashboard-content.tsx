@@ -5,8 +5,12 @@ import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 
 import { Button } from "~/components/ui/button";
-import { FoodBreakdownChart } from "~/app/dashboard/_components/food-breakdown-chart";
-import { KcalTrendChart } from "~/app/dashboard/_components/kcal-trend-chart";
+import {
+    FoodBreakdownChart,
+    KcalTrendChart,
+    WeightChart,
+    WeightStatsCard,
+} from "~/app/dashboard/_components/lazy-charts";
 import { PetAlerts } from "~/app/dashboard/_components/pet-alerts";
 import { PetPicker } from "~/app/dashboard/_components/pet-picker";
 import { RecordActivityDialog } from "~/app/dashboard/_components/record-activity-dialog";
@@ -14,8 +18,6 @@ import { RecordFeedingDialog } from "~/app/dashboard/_components/record-feeding-
 import { RecordWeightDialog } from "~/app/dashboard/_components/record-weight-dialog";
 import { TodayActivity } from "~/app/dashboard/_components/today-activity";
 import { TodayFeedings } from "~/app/dashboard/_components/today-feedings";
-import { WeightChart } from "~/app/dashboard/_components/weight-chart";
-import { WeightStatsCard } from "~/app/dashboard/_components/weight-stats-card";
 import { type RouterOutputs } from "~/trpc/react";
 
 type Pet = RouterOutputs["pet"]["getPets"][number];

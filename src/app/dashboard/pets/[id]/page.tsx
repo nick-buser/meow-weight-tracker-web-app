@@ -15,8 +15,10 @@ import { NotesCard } from "~/app/dashboard/pets/[id]/_components/notes-card";
 import { ImportWeightCard } from "~/app/dashboard/pets/[id]/_components/import-weight-card";
 import { DeletePetCard } from "~/app/dashboard/pets/[id]/_components/delete-pet-card";
 import { PetAlerts } from "~/app/dashboard/_components/pet-alerts";
-import { WeightChart } from "~/app/dashboard/_components/weight-chart";
-import { WeightStatsCard } from "~/app/dashboard/_components/weight-stats-card";
+import {
+    WeightChart,
+    WeightStatsCard,
+} from "~/app/dashboard/_components/lazy-charts";
 import { api } from "~/trpc/server";
 
 export default async function PetDetailPage({
