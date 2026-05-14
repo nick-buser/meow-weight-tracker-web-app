@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 
 import { Button } from "~/components/ui/button";
 import { PetEditCard } from "~/app/dashboard/pets/[id]/_components/pet-edit-card";
+import { PhotoGalleryCard } from "~/app/dashboard/pets/[id]/_components/photo-gallery-card";
 import { FeedingHistoryList } from "~/app/dashboard/pets/[id]/_components/feeding-history-list";
 import { WeightHistoryList } from "~/app/dashboard/pets/[id]/_components/weight-history-list";
 import { ExportCard } from "~/app/dashboard/pets/[id]/_components/export-card";
@@ -57,6 +58,11 @@ export default async function PetDetailPage({
             </div>
             <PetAlerts petId={pet.id} petName={pet.name} />
             <PetEditCard pet={pet} />
+            <PhotoGalleryCard
+                petId={pet.id}
+                canEdit={pet.role !== "Viewer"}
+                primaryUrl={pet.photoUrl}
+            />
             <WeightStatsCard
                 petId={pet.id}
                 petName={pet.name}
