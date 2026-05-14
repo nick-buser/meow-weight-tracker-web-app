@@ -10,6 +10,7 @@ import { getPetInput } from "~/schema/getPetInput";
 import { updatePetInput } from "~/schema/updatePetInput";
 import { petInvites, petPeople, pets, users } from "~/server/db/schema";
 import { assertPetAccess } from "~/server/api/petAccess";
+import { enforceRateLimit } from "~/server/api/ratelimit";
 
 const roleSchema = z.enum(["Owner", "Editor", "Viewer"]);
 
@@ -17,6 +18,7 @@ export const petRouter = createTRPCRouter({
     insertPet: protectedProcedure
         .input(createPetRequestInput)
         .mutation(async ({ ctx, input }) => {
+            await enforceRateLimit("insertPet", ctx.userId, 20, "1 h");
             return await ctx.db.transaction(async (trx) => {
                 const [newPet] = await trx
                     .insert(pets)
@@ -306,6 +308,7 @@ export const petRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
+            await enforceRateLimit("createInvite", ctx.userId, 10, "1 h");
             const role = await assertPetAccess(ctx.db, ctx.userId, input.petId);
             if (role !== "Owner") {
                 throw new TRPCError({

@@ -9,6 +9,7 @@ import { recordFeedingInput } from "~/schema/recordFeedingInput";
 import { updateFeedingEntryInput } from "~/schema/updateFeedingEntryInput";
 import { deleteFeedingEntryInput } from "~/schema/deleteFeedingEntryInput";
 import { assertPetAccess } from "~/server/api/petAccess";
+import { enforceRateLimit } from "~/server/api/ratelimit";
 
 async function loadEntryPetId(
     database: typeof db,
@@ -32,6 +33,7 @@ export const feedingRouter = createTRPCRouter({
     recordFeeding: protectedProcedure
         .input(recordFeedingInput)
         .mutation(async ({ ctx, input }) => {
+            await enforceRateLimit("recordFeeding", ctx.userId, 60, "1 m");
             await assertPetAccess(ctx.db, ctx.userId, input.petId);
 
             const [entry] = await ctx.db

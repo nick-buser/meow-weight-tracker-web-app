@@ -27,6 +27,8 @@
     "@trpc/client": "next",
     "@trpc/react-query": "next",
     "@trpc/server": "next",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "@vercel/blob": "^2.3.3",
     "@vercel/postgres": "^0.8.0",
     "@vercel/speed-insights": "^1.0.12",

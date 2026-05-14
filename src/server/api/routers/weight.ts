@@ -14,6 +14,7 @@ import {
     updateWeightEntryInput,
 } from "~/schema/updateWeightEntryInput";
 import { assertPetAccess } from "~/server/api/petAccess";
+import { enforceRateLimit } from "~/server/api/ratelimit";
 
 async function loadEntryPetId(
     database: typeof db,
@@ -34,6 +35,7 @@ export const weightRouter = createTRPCRouter({
     recordWeight: protectedProcedure
         .input(recordWeightInput)
         .mutation(async ({ ctx, input }) => {
+            await enforceRateLimit("recordWeight", ctx.userId, 60, "1 m");
             await assertPetAccess(ctx.db, ctx.userId, input.petId);
 
             const [entry] = await ctx.db
@@ -125,6 +127,7 @@ export const weightRouter = createTRPCRouter({
             }),
         )
         .mutation(async ({ ctx, input }) => {
+            await enforceRateLimit("bulkImport", ctx.userId, 5, "1 h");
             const role = await assertPetAccess(ctx.db, ctx.userId, input.petId);
             if (role === "Viewer") {
                 throw new TRPCError({
