@@ -78,18 +78,52 @@ export function PeopleManager({
                         </p>
                     ) : (
                         <ul className="divide-y">
-                            {people.data.map((p) => (
+                            {people.data.map((p) => {
+                                const profile = p.profile;
+                                const fullName = profile
+                                    ? [profile.firstName, profile.lastName]
+                                          .filter(Boolean)
+                                          .join(" ")
+                                    : "";
+                                const displayName =
+                                    fullName.length > 0
+                                        ? fullName
+                                        : profile?.email && profile.email.length > 0
+                                          ? profile.email
+                                          : p.userId;
+                                return (
                                 <li
                                     key={p.userId}
                                     className="flex items-center justify-between gap-3 py-2 text-sm"
                                 >
-                                    <div className="min-w-0">
-                                        <div className="truncate font-mono text-xs">
-                                            {p.userId}
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {p.role} · added{" "}
-                                            {p.addedAt.toLocaleDateString()}
+                                    <div className="flex min-w-0 items-center gap-3">
+                                        {profile?.imageUrl ? (
+                                            // eslint-disable-next-line @next/next/no-img-element
+                                            <img
+                                                src={profile.imageUrl}
+                                                alt=""
+                                                className="h-8 w-8 rounded-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold">
+                                                {displayName
+                                                    .charAt(0)
+                                                    .toUpperCase()}
+                                            </div>
+                                        )}
+                                        <div className="min-w-0">
+                                            <div className="truncate font-medium">
+                                                {displayName}
+                                            </div>
+                                            <div className="text-xs text-muted-foreground">
+                                                {p.role}
+                                                {profile?.email &&
+                                                displayName !== profile.email
+                                                    ? ` · ${profile.email}`
+                                                    : ""}
+                                                {" · added "}
+                                                {p.addedAt.toLocaleDateString()}
+                                            </div>
                                         </div>
                                     </div>
                                     {canManage && (
@@ -117,7 +151,8 @@ export function PeopleManager({
                                         </Button>
                                     )}
                                 </li>
-                            ))}
+                                );
+                            })}
                         </ul>
                     )}
                 </CardContent>

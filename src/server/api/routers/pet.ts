@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { clerkClient } from "@clerk/nextjs/server";
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -187,7 +188,7 @@ export const petRouter = createTRPCRouter({
         .input(getPetInput)
         .query(async ({ ctx, input }) => {
             await assertPetAccess(ctx.db, ctx.userId, input.petId);
-            return ctx.db
+            const rows = await ctx.db
                 .select({
                     userId: petPeople.userId,
                     role: petPeople.role,
@@ -195,6 +196,59 @@ export const petRouter = createTRPCRouter({
                 })
                 .from(petPeople)
                 .where(eq(petPeople.petId, input.petId));
+
+            // Best-effort Clerk profile fetch. If Clerk's API fails we still
+            // return the rows with nullable profile fields rather than erroring.
+            const userIds = rows.map((r) => r.userId);
+            const profiles = new Map<
+                string,
+                {
+                    firstName: string | null;
+                    lastName: string | null;
+                    imageUrl: string | null;
+                    email: string | null;
+                }
+            >();
+            if (userIds.length > 0) {
+                try {
+                    const list = await clerkClient.users.getUserList({
+                        userId: userIds,
+                        limit: userIds.length,
+                    });
+                    const users = Array.isArray(list)
+                        ? list
+                        : ((list as { data?: unknown }).data ?? []);
+                    for (const u of users as Array<{
+                        id: string;
+                        firstName: string | null;
+                        lastName: string | null;
+                        imageUrl: string | null;
+                        emailAddresses: Array<{ emailAddress: string }>;
+                        primaryEmailAddressId: string | null;
+                    }>) {
+                        const primary =
+                            u.emailAddresses.find(
+                                (e) =>
+                                    (
+                                        e as unknown as { id?: string }
+                                    ).id === u.primaryEmailAddressId,
+                            ) ?? u.emailAddresses[0];
+                        profiles.set(u.id, {
+                            firstName: u.firstName ?? null,
+                            lastName: u.lastName ?? null,
+                            imageUrl: u.imageUrl ?? null,
+                            email: primary?.emailAddress ?? null,
+                        });
+                    }
+                } catch (err) {
+                    console.error("Clerk getUserList failed", err);
+                }
+            }
+
+            return rows.map((r) => ({
+                ...r,
+                profile: profiles.get(r.userId) ?? null,
+            }));
         }),
 
     removePerson: protectedProcedure
