@@ -5,7 +5,7 @@ import { ThemeToggle } from "~/components/theme-toggle";
 
 export function TopNav() {
     return (
-        <nav className="flex w-full items-center justify-between border-b px-4 py-3">
+        <nav className="flex w-full items-center justify-between border-b px-4 py-3 print:hidden">
             <Link href="/" className="text-lg font-semibold">
                 🐾 Meow
             </Link>

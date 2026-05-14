@@ -235,3 +235,60 @@ export const healthEvents = createTable(
         petIdx: index("health_events_pet_id_idx").on(table.petId),
     }),
 );
+
+// Gallery of photos for a pet, captured over time. The pet's "primary"
+// photo is still `pets.photoUrl`; a gallery row is promoted to primary by
+// copying its `url` there (see the photos router `setPrimary`).
+export const petPhotos = createTable(
+    "pet_photos",
+    {
+        id: serial("id").primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        url: varchar("url", { length: 1024 }).notNull(),
+        caption: varchar("caption", { length: 256 }),
+        takenAt: timestamp("taken_at", { withTimezone: true }).notNull(),
+        uploadedBy: varchar("uploaded_by", { length: 256 })
+            .references(() => users.id)
+            .notNull(),
+        ...timestamps,
+    },
+    (table) => ({
+        petIdx: index("pet_photos_pet_id_idx").on(table.petId),
+    }),
+);
+
+export const appointmentStatusEnum = pgEnum("appointment_status", [
+    "Scheduled",
+    "Completed",
+    "Cancelled",
+]);
+
+// Upcoming (and past) vet/grooming appointments. Distinct from
+// health_events, which is a log of things that already happened — an
+// appointment has a forward-looking schedule and a lifecycle status.
+export const petAppointments = createTable(
+    "pet_appointments",
+    {
+        id: serial("id").primaryKey(),
+        petId: integer("pet_id")
+            .references(() => pets.id)
+            .notNull(),
+        title: varchar("title", { length: 256 }).notNull(),
+        appointmentType: varchar("appointment_type", { length: 64 }).notNull(),
+        scheduledFor: timestamp("scheduled_for", {
+            withTimezone: true,
+        }).notNull(),
+        location: varchar("location", { length: 256 }),
+        notes: varchar("notes", { length: 2048 }),
+        status: appointmentStatusEnum("status").notNull().default("Scheduled"),
+        createdBy: varchar("created_by", { length: 256 })
+            .references(() => users.id)
+            .notNull(),
+        ...timestamps,
+    },
+    (table) => ({
+        petIdx: index("pet_appointments_pet_id_idx").on(table.petId),
+    }),
+);
