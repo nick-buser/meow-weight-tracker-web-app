@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
     env:
       SKIP_ENV_VALIDATION: "1"
+      POSTGRES_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+      # Syntactically-valid Clerk dummy keys so the build's "Collecting page
+      # data" step doesn't choke on atob. Not used at runtime in CI.
+      CLERK_PUBLISHABLE_KEY: "pk_test_Y2xlcmsuZHVtbXkubGNsLmRldiQ="
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2xlcmsuZHVtbXkubGNsLmRldiQ="
+      CLERK_SECRET_KEY: "sk_test_dummy"
     steps:
       - uses: actions/checkout@v4
 
@@ -33,3 +39,20 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Drizzle migrations up to date
+        run: |
+          # Generate would write a new migration file iff schema.ts and the
+          # latest snapshot have drifted. Compare the drizzle dir before and
+          # after; fail if anything new appeared.
+          before=$(git status --porcelain drizzle | wc -l)
+          pnpm db:generate
+          after=$(git status --porcelain drizzle | wc -l)
+          if [ "$before" != "$after" ]; then
+            echo "Schema changed but no migration committed. Run 'pnpm db:generate' and commit drizzle/."
+            git status --short drizzle/
+            exit 1
+          fi
+
+      - name: Next.js build
+        run: pnpm build

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { clerkClient } from "@clerk/nextjs/server";
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -187,7 +188,7 @@ export const petRouter = createTRPCRouter({
         .input(getPetInput)
         .query(async ({ ctx, input }) => {
             await assertPetAccess(ctx.db, ctx.userId, input.petId);
-            return ctx.db
+            const rows = await ctx.db
                 .select({
                     userId: petPeople.userId,
                     role: petPeople.role,
@@ -195,6 +196,59 @@ export const petRouter = createTRPCRouter({
                 })
                 .from(petPeople)
                 .where(eq(petPeople.petId, input.petId));
+
+            // Best-effort Clerk profile fetch. If Clerk's API fails we still
+            // return the rows with nullable profile fields rather than erroring.
+            const userIds = rows.map((r) => r.userId);
+            const profiles = new Map<
+                string,
+                {
+                    firstName: string | null;
+                    lastName: string | null;
+                    imageUrl: string | null;
+                    email: string | null;
+                }
+            >();
+            if (userIds.length > 0) {
+                try {
+                    const list = await clerkClient.users.getUserList({
+                        userId: userIds,
+                        limit: userIds.length,
+                    });
+                    const users = Array.isArray(list)
+                        ? list
+                        : ((list as { data?: unknown }).data ?? []);
+                    for (const u of users as Array<{
+                        id: string;
+                        firstName: string | null;
+                        lastName: string | null;
+                        imageUrl: string | null;
+                        emailAddresses: Array<{ emailAddress: string }>;
+                        primaryEmailAddressId: string | null;
+                    }>) {
+                        const primary =
+                            u.emailAddresses.find(
+                                (e) =>
+                                    (
+                                        e as unknown as { id?: string }
+                                    ).id === u.primaryEmailAddressId,
+                            ) ?? u.emailAddresses[0];
+                        profiles.set(u.id, {
+                            firstName: u.firstName ?? null,
+                            lastName: u.lastName ?? null,
+                            imageUrl: u.imageUrl ?? null,
+                            email: primary?.emailAddress ?? null,
+                        });
+                    }
+                } catch (err) {
+                    console.error("Clerk getUserList failed", err);
+                }
+            }
+
+            return rows.map((r) => ({
+                ...r,
+                profile: profiles.get(r.userId) ?? null,
+            }));
         }),
 
     removePerson: protectedProcedure
@@ -266,6 +320,7 @@ export const petRouter = createTRPCRouter({
                 });
             }
             const token = randomUUID().replace(/-/g, "");
+            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
             const [row] = await ctx.db
                 .insert(petInvites)
                 .values({
@@ -273,6 +328,7 @@ export const petRouter = createTRPCRouter({
                     petId: input.petId,
                     role: input.role,
                     createdBy: ctx.userId,
+                    expiresAt,
                 })
                 .returning();
             if (!row) {
@@ -282,6 +338,54 @@ export const petRouter = createTRPCRouter({
                 });
             }
             return row;
+        }),
+
+    listInvites: protectedProcedure
+        .input(getPetInput)
+        .query(async ({ ctx, input }) => {
+            const role = await assertPetAccess(ctx.db, ctx.userId, input.petId);
+            if (role !== "Owner") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Only the Owner can list invites.",
+                });
+            }
+            return ctx.db
+                .select()
+                .from(petInvites)
+                .where(eq(petInvites.petId, input.petId));
+        }),
+
+    revokeInvite: protectedProcedure
+        .input(z.object({ token: z.string().min(1) }))
+        .mutation(async ({ ctx, input }) => {
+            const [invite] = await ctx.db
+                .select()
+                .from(petInvites)
+                .where(eq(petInvites.token, input.token))
+                .limit(1);
+            if (!invite) {
+                throw new TRPCError({
+                    code: "NOT_FOUND",
+                    message: "Invite not found.",
+                });
+            }
+            const role = await assertPetAccess(
+                ctx.db,
+                ctx.userId,
+                invite.petId,
+            );
+            if (role !== "Owner") {
+                throw new TRPCError({
+                    code: "FORBIDDEN",
+                    message: "Only the Owner can revoke invites.",
+                });
+            }
+            await ctx.db
+                .update(petInvites)
+                .set({ revokedAt: new Date() })
+                .where(eq(petInvites.token, input.token));
+            return { ok: true as const };
         }),
 
     acceptInvite: protectedProcedure
@@ -302,6 +406,21 @@ export const petRouter = createTRPCRouter({
                 throw new TRPCError({
                     code: "BAD_REQUEST",
                     message: "Invite already used.",
+                });
+            }
+            if (invite.revokedAt !== null) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invite was revoked.",
+                });
+            }
+            if (
+                invite.expiresAt !== null &&
+                invite.expiresAt.getTime() < Date.now()
+            ) {
+                throw new TRPCError({
+                    code: "BAD_REQUEST",
+                    message: "Invite has expired.",
                 });
             }
             await ctx.db
