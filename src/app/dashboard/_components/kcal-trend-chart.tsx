@@ -56,9 +56,18 @@ export function KcalTrendChart({
                 {isLoading ? (
                     <Skeleton className="h-48 w-full" />
                 ) : (
-                    <div className="h-48 w-full">
+                    <div
+                        className="h-48 w-full"
+                        role="img"
+                        aria-label={`Daily calorie intake for ${petName} over the last ${days.length} days${
+                            dailyKcalTarget
+                                ? `, against a target of ${dailyKcalTarget} kcal`
+                                : ""
+                        }.`}
+                    >
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
+                                accessibilityLayer
                                 data={days}
                                 margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
                             >

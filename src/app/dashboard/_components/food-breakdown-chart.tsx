@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Utensils } from "lucide-react";
 import {
     Bar,
     BarChart,
@@ -19,6 +20,7 @@ import {
     CardHeader,
     CardTitle,
 } from "~/components/ui/card";
+import { EmptyState } from "~/components/ui/empty-state";
 import { Skeleton } from "~/components/ui/skeleton";
 import { computeFoodBreakdown } from "~/lib/food-breakdown";
 import { api } from "~/trpc/react";
@@ -60,13 +62,22 @@ export function FoodBreakdownChart({
                 {isLoading ? (
                     <Skeleton className="h-56 w-full" />
                 ) : series.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                        No feedings in the last 30 days.
-                    </p>
+                    <EmptyState
+                        icon={Utensils}
+                        title="No feedings in the last 30 days"
+                        description="Log some meals to see where the calories come from."
+                    />
                 ) : (
-                    <div className="h-56 w-full">
+                    <div
+                        className="h-56 w-full"
+                        role="img"
+                        aria-label={`${petName}'s calorie sources over the last 30 days, stacked by day across ${series.length} ${
+                            series.length === 1 ? "food" : "foods"
+                        }.`}
+                    >
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart
+                                accessibilityLayer
                                 data={chartData}
                                 margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
                             >
