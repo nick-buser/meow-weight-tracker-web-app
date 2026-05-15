@@ -13,6 +13,7 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { EmptyState } from "~/components/ui/empty-state";
+import { ListSkeleton } from "~/components/ui/list-skeleton";
 import { api } from "~/trpc/react";
 
 export function NotesCard({
@@ -83,7 +84,7 @@ export function NotesCard({
                     </form>
                 )}
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <ListSkeleton />
                 ) : !data || data.length === 0 ? (
                     <EmptyState
                         icon={NotebookPen}

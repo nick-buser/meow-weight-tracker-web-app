@@ -13,6 +13,7 @@ import {
     CardTitle,
 } from "~/components/ui/card";
 import { EmptyState } from "~/components/ui/empty-state";
+import { ListSkeleton } from "~/components/ui/list-skeleton";
 import { Label } from "~/components/ui/label";
 import { api } from "~/trpc/react";
 
@@ -84,7 +85,7 @@ export function PeopleManager({
                 </CardHeader>
                 <CardContent>
                     {people.isLoading ? (
-                        <p className="text-sm text-muted-foreground">Loading…</p>
+                        <ListSkeleton />
                     ) : !people.data || people.data.length === 0 ? (
                         <EmptyState
                             icon={Users}

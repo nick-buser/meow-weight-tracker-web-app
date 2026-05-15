@@ -21,6 +21,7 @@ import {
     DialogTrigger,
 } from "~/components/ui/dialog";
 import { EmptyState } from "~/components/ui/empty-state";
+import { ListSkeleton } from "~/components/ui/list-skeleton";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { isMedDue, nextDueAt } from "~/lib/meds-due";
@@ -238,7 +239,7 @@ export function MedsCard({
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <ListSkeleton />
                 ) : !data || data.length === 0 ? (
                     <EmptyState
                         icon={Pill}

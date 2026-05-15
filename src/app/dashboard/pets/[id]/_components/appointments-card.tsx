@@ -30,6 +30,7 @@ import {
     DialogTrigger,
 } from "~/components/ui/dialog";
 import { EmptyState } from "~/components/ui/empty-state";
+import { ListSkeleton } from "~/components/ui/list-skeleton";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { api, type RouterOutputs } from "~/trpc/react";
@@ -89,7 +90,7 @@ export function AppointmentsCard({
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <ListSkeleton />
                 ) : all.length === 0 ? (
                     <EmptyState
                         icon={CalendarClock}

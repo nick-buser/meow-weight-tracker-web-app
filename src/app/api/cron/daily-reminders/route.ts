@@ -157,7 +157,9 @@ export async function GET(req: Request) {
             continue;
         }
         const subject = `${pet.name} hasn't been fed in ${hours}h`;
-        const html = `<p>Heads up: <strong>${pet.name}</strong> hasn't been fed in ${hours} hours.</p><p>Log a feeding from the Meow Weight Tracker dashboard.</p>`;
+        const html = `<p>Heads up: <strong>${escapeHtml(
+            pet.name,
+        )}</strong> hasn't been fed in ${hours} hours.</p><p>Log a feeding from the Meow Weight Tracker dashboard.</p>`;
         let sent = 0;
         for (const r of recipients) {
             try {

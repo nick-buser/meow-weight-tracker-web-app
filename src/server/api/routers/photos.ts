@@ -1,12 +1,15 @@
 import { and, desc, eq } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
+import { del } from "@vercel/blob";
 import { z } from "zod";
 
+import { env } from "~/env";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { type db } from "~/server/db";
 import { petPhotos, pets } from "~/server/db/schema";
 import { addPetPhotoInput } from "~/schema/addPetPhotoInput";
 import { assertPetAccess } from "~/server/api/petAccess";
+import { enforceRateLimit } from "~/server/api/ratelimit";
 
 async function loadPhoto(database: typeof db, photoId: number) {
     const [row] = await database
@@ -38,6 +41,7 @@ export const photosRouter = createTRPCRouter({
     add: protectedProcedure
         .input(addPetPhotoInput)
         .mutation(async ({ ctx, input }) => {
+            await enforceRateLimit("addPhoto", ctx.userId, 60, "1 h");
             const role = await assertPetAccess(ctx.db, ctx.userId, input.petId);
             if (role === "Viewer") {
                 throw new TRPCError({
@@ -84,6 +88,22 @@ export const photosRouter = createTRPCRouter({
                         eq(pets.photoUrl, photo.url),
                     ),
                 );
+            // Best-effort: drop the underlying Blob object so removed
+            // photos don't linger in storage. A failure here (missing
+            // token, an already-gone object, a non-Blob url) must not
+            // fail the mutation — the DB row is already deleted.
+            if (env.BLOB_READ_WRITE_TOKEN) {
+                try {
+                    await del(photo.url, {
+                        token: env.BLOB_READ_WRITE_TOKEN,
+                    });
+                } catch (err) {
+                    console.error(
+                        `Failed to delete blob for photo ${photo.id}`,
+                        err,
+                    );
+                }
+            }
             return { ok: true as const };
         }),
 

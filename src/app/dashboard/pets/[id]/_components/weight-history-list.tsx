@@ -14,6 +14,7 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { EmptyState } from "~/components/ui/empty-state";
+import { ListSkeleton } from "~/components/ui/list-skeleton";
 import { useWeightUnit } from "~/hooks/use-weight-unit";
 import { formatWeight, toKg } from "~/lib/units";
 import { api } from "~/trpc/react";
@@ -41,7 +42,7 @@ export function WeightHistoryList({
             </CardHeader>
             <CardContent>
                 {isLoading ? (
-                    <p className="text-sm text-muted-foreground">Loading…</p>
+                    <ListSkeleton />
                 ) : sorted.length === 0 ? (
                     <EmptyState
                         icon={Scale}
