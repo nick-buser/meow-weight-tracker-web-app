@@ -24,10 +24,16 @@ when:
   - event: [pull_request, push, tag]
 
 steps:
-  # ── Node test gates: pnpm + lint + typecheck + test + build ─────────
+  # ── Node test gates: pnpm + lint + typecheck + test ─────────────────
   # No sidecar DB — meow's vitest suite is pure unit (src/lib/*.test.ts).
-  # SKIP_ENV_VALIDATION lets the env validator no-op during the build
-  # step (POSTGRES_URL etc. are runtime concerns).
+  # SKIP_ENV_VALIDATION lets the env validator no-op (POSTGRES_URL etc.
+  # are runtime concerns).
+  #
+  # We intentionally DON'T run `pnpm run build` here — the publish-*
+  # steps below do the build inside Docker, and doing it twice per
+  # pipeline pegged the Woodpecker LXC at 100% CPU for ~hour-long
+  # stretches on Node-heavy tenants. Build failures will surface in
+  # the publish step regardless.
   check:
     image: node:22-alpine
     environment:
@@ -39,7 +45,6 @@ steps:
       - pnpm run lint
       - pnpm run typecheck
       - pnpm test
-      - pnpm run build
 
   # ── Image publishing ───────────────────────────────────────────────
   # Build the Dockerfile's `runtime` target and push to git.lab registry.
