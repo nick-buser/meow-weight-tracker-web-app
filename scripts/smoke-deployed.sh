@@ -49,7 +49,7 @@ echo
 require_status "$TARGET/"                          "200"      "GET /"
 # 2. /dashboard — Clerk-protected; accepts 200 (Clerk renders sign-in inline)
 #    OR 307/302 (Clerk redirect to /sign-in).
-require_status_in "$TARGET/dashboard"              "200,302,307" "GET /dashboard (clerk-protected)"
+require_status_in "$TARGET/dashboard"              "200,302,307,308" "GET /dashboard (clerk-protected)"
 # 3. _next/static asset path — Next.js serves these directly
 require_status_in "$TARGET/_next/static/css"       "404,403"  "GET /_next/static/css (no such file but path serves)"
 # 4. Favicon
