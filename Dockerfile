@@ -4,7 +4,11 @@
 # Reference: scripts/templates/woodpecker-app/node-fullstack/Dockerfile in the
 # homelab repo; customised for Next.js' standalone runtime payload + pnpm.
 
-ARG NODE_VERSION=22
+# Node 22 hit `Cannot redefine property: __import_unsupported` from Next.js
+# 14's middleware sandbox on the standalone runtime — see
+# https://github.com/vercel/next.js/issues/65459 etc. Pinning to 20 until
+# Next is upgraded (>= 14.2.10 fixes it, but meow is on 14.2.4).
+ARG NODE_VERSION=20
 
 # ============================================================
 # Stage 1 — Resolve deps via pnpm (cached unless package.json/lockfile change)
@@ -22,6 +26,7 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
 # ============================================================
 FROM node:${NODE_VERSION}-alpine AS builder
 WORKDIR /app
+RUN apk add --no-cache libc6-compat
 RUN corepack enable pnpm
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
