@@ -55,6 +55,9 @@ steps:
 
   publish-pr:
     image: woodpeckerci/plugin-docker-buildx:latest
+    environment:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+        from_secret: meow_weight_tracker_clerk_publishable_key
     settings:
       registry: git.lab
       repo: git.lab/nick-b/meow-weight-tracker
@@ -64,6 +67,11 @@ steps:
         from_secret: registry_user
       password:
         from_secret: registry_token
+      # NEXT_PUBLIC_* env vars are baked into the JS bundle at build time
+      # (Next.js standalone trace). build_args_from_env pulls the secret
+      # the step's env into the docker build context.
+      build_args_from_env:
+        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
       tags:
         - "pr-${CI_COMMIT_PULL_REQUEST}-${CI_COMMIT_SHA:0:8}"
         - "pr-${CI_COMMIT_PULL_REQUEST}-latest"
@@ -74,6 +82,9 @@ steps:
 
   publish-main:
     image: woodpeckerci/plugin-docker-buildx:latest
+    environment:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+        from_secret: meow_weight_tracker_clerk_publishable_key
     settings:
       registry: git.lab
       repo: git.lab/nick-b/meow-weight-tracker
@@ -83,6 +94,8 @@ steps:
         from_secret: registry_user
       password:
         from_secret: registry_token
+      build_args_from_env:
+        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
       tags:
         - "main-${CI_COMMIT_SHA:0:8}"
         - "dev-latest"
@@ -94,6 +107,9 @@ steps:
 
   publish-tag:
     image: woodpeckerci/plugin-docker-buildx:latest
+    environment:
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
+        from_secret: meow_weight_tracker_clerk_publishable_key
     settings:
       registry: git.lab
       repo: git.lab/nick-b/meow-weight-tracker
@@ -103,6 +119,8 @@ steps:
         from_secret: registry_user
       password:
         from_secret: registry_token
+      build_args_from_env:
+        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
       tags:
         - "${CI_COMMIT_TAG}"
         - "${CI_COMMIT_SHA:0:8}"
