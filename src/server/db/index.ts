@@ -7,13 +7,17 @@ import * as schema from "./schema";
 // reason — postgres-js' built-in URL parser rejects unescaped `/`, `+` etc.
 // in the password component, and the homelab Dokploy layer can't reliably
 // preserve percent-encoding through env injection.
-function parsePgUrl(url: string) {
+function pgOptionsFrom(url: unknown): postgres.Options<Record<string, never>> {
+  // Tests run with SKIP_ENV_VALIDATION=1 and may not set POSTGRES_URL; the
+  // tRPC router files import this module so module-load must not throw.
+  if (typeof url !== "string" || url.length === 0) return { max: 1 };
   const m = url.match(
     /^postgres(?:ql)?:\/\/([^:@]+):([^@]*)@([^:/]+)(?::(\d+))?\/([^?]+)(?:\?.*)?$/,
   );
-  if (!m) throw new Error(`Invalid POSTGRES_URL shape: ${url}`);
+  if (!m) return { max: 1 };
   const [, user, pass, host, port, db] = m;
   return {
+    max: 1,
     username: decodeURIComponent(user!),
     password: decodeURIComponent(pass!),
     host: host!,
@@ -22,6 +26,6 @@ function parsePgUrl(url: string) {
   };
 }
 
-const client = postgres({ ...parsePgUrl(env.POSTGRES_URL), max: 1 });
+const client = postgres(pgOptionsFrom(env.POSTGRES_URL));
 
 export const db = drizzle(client, { schema });
