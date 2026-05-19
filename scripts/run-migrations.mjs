@@ -22,7 +22,7 @@ function parsePgUrl(url) {
     username: decodeURIComponent(m[1]),
     password: decodeURIComponent(m[2]),
     host: m[3],
-    port: parseInt(m[4] || "5432", 10),
+    port: parseInt(m[4] ?? "5432", 10),
     database: m[5],
   };
 }
