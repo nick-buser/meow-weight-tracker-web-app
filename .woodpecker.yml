@@ -1,0 +1,148 @@
+# Woodpecker CI for meow-weight-tracker.
+#
+# Pipeline shape (matches docs/homelab-migration-plan.md § Phase 4 and the
+# canonical pattern in homelab_infra_and_planning/docs/cicd-flow.md):
+#
+#   Event           Steps that fire
+#   ─────────────── ──────────────────────────────────────────────────────
+#   pull_request    check, publish-pr
+#   push → main     check, publish-main, deploy-dev
+#   tag v*          check, publish-tag, deploy-prod
+#
+# Secrets (registered globally by the homelab woodpecker-setup.yml
+# _wp_secrets loop; pulled into steps via environment.VAR.from_secret):
+#   registry_user                          — Gitea user, plaintext
+#   registry_token                         — Gitea token with write:package
+#   meow_weight_tracker_dev_db_url         — POSTGRES_URL for CI tests (optional, tests are pure)
+#   dokploy_token                          — Dokploy PAT (x-api-key)
+#   meow_weight_tracker_{dev,prod}_app_id  — Dokploy application IDs
+#
+# .github/workflows/ci.yml continues to run on the github remote — dual
+# pipeline doctrine (see homelab project_dual_pipeline memory).
+
+when:
+  - event: [pull_request, push, tag]
+
+steps:
+  # ── Node test gates: pnpm + lint + typecheck + test + build ─────────
+  # No sidecar DB — meow's vitest suite is pure unit (src/lib/*.test.ts).
+  # SKIP_ENV_VALIDATION lets the env validator no-op during the build
+  # step (POSTGRES_URL etc. are runtime concerns).
+  check:
+    image: node:22-alpine
+    environment:
+      SKIP_ENV_VALIDATION: "1"
+      NEXT_TELEMETRY_DISABLED: "1"
+    commands:
+      - corepack enable pnpm
+      - pnpm install --frozen-lockfile
+      - pnpm run lint
+      - pnpm run typecheck
+      - pnpm test
+      - pnpm run build
+
+  # ── Image publishing ───────────────────────────────────────────────
+  # Build the Dockerfile's `runtime` target and push to git.lab registry.
+  # The agent mounts /etc/docker/certs.d so buildkitd auto-detects the
+  # Caddy CA and pushes under proper TLS. NEXT_PUBLIC_* env vars get
+  # baked into the JS bundle at build; supply via build_args once secrets
+  # are minted (see homelab `_wp_secrets`).
+
+  publish-pr:
+    image: woodpeckerci/plugin-docker-buildx:latest
+    settings:
+      registry: git.lab
+      repo: git.lab/nick-b/meow-weight-tracker
+      dockerfile: Dockerfile
+      target: runtime
+      username:
+        from_secret: registry_user
+      password:
+        from_secret: registry_token
+      tags:
+        - "pr-${CI_COMMIT_PULL_REQUEST}-${CI_COMMIT_SHA:0:8}"
+        - "pr-${CI_COMMIT_PULL_REQUEST}-latest"
+    when:
+      - event: pull_request
+    depends_on:
+      - check
+
+  publish-main:
+    image: woodpeckerci/plugin-docker-buildx:latest
+    settings:
+      registry: git.lab
+      repo: git.lab/nick-b/meow-weight-tracker
+      dockerfile: Dockerfile
+      target: runtime
+      username:
+        from_secret: registry_user
+      password:
+        from_secret: registry_token
+      tags:
+        - "main-${CI_COMMIT_SHA:0:8}"
+        - "dev-latest"
+    when:
+      - event: push
+        branch: main
+    depends_on:
+      - check
+
+  publish-tag:
+    image: woodpeckerci/plugin-docker-buildx:latest
+    settings:
+      registry: git.lab
+      repo: git.lab/nick-b/meow-weight-tracker
+      dockerfile: Dockerfile
+      target: runtime
+      username:
+        from_secret: registry_user
+      password:
+        from_secret: registry_token
+      tags:
+        - "${CI_COMMIT_TAG}"
+        - "${CI_COMMIT_SHA:0:8}"
+        - "prod-latest"
+    when:
+      - event: tag
+    depends_on:
+      - check
+
+  # ── Dokploy redeploy hooks (x-api-key + tRPC route) ──────────────────
+  deploy-dev:
+    image: curlimages/curl:8.10.1
+    environment:
+      DOKPLOY_TOKEN:
+        from_secret: dokploy_token
+      DOKPLOY_APP_ID:
+        from_secret: meow_weight_tracker_dev_app_id
+    commands:
+      - >-
+        curl -fsSL --cacert /etc/ssl/certs/ca-certificates.crt -X POST
+        -H "x-api-key: $${DOKPLOY_TOKEN}"
+        -H "Content-Type: application/json"
+        -d "{\"applicationId\":\"$${DOKPLOY_APP_ID}\"}"
+        https://dokploy.lab/api/application.deploy
+    when:
+      - event: push
+        branch: main
+    depends_on:
+      - publish-main
+
+  deploy-prod:
+    image: curlimages/curl:8.10.1
+    environment:
+      DOKPLOY_TOKEN:
+        from_secret: dokploy_token
+      DOKPLOY_APP_ID:
+        from_secret: meow_weight_tracker_prod_app_id
+    commands:
+      - >-
+        curl -fsSL --cacert /etc/ssl/certs/ca-certificates.crt -X POST
+        -H "x-api-key: $${DOKPLOY_TOKEN}"
+        -H "Content-Type: application/json"
+        -d "{\"applicationId\":\"$${DOKPLOY_APP_ID}\"}"
+        https://dokploy.lab/api/application.deploy
+    when:
+      - event: tag
+    depends_on:
+      - publish-tag

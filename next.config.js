@@ -6,8 +6,11 @@ await import("./src/env.js");
 
 /** @type {import("next").NextConfig} */
 const config = {
-  // @vercel/blob v2 bundles undici, which ships private-class-field syntax that
-  // Next 14's webpack loader can't parse. Keep it as a runtime Node import.
+  // Required for the homelab container image: produces a self-contained
+  // `.next/standalone/server.js` runtime payload that the Dockerfile copies
+  // directly. Without this, the runtime stage would need the full repo +
+  // node_modules.
+  output: "standalone",
   experimental: {
     serverComponentsExternalPackages: ["@vercel/blob"],
   },

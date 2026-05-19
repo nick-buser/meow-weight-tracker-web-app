@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.gitignore
+.github
+.vercel
+.idea
+.vscode
+.DS_Store
+*.log
+coverage
+playwright-report
+test-results
+.env*
+!.env.example
+README.md
+docs/
