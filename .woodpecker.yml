@@ -55,9 +55,6 @@ steps:
 
   publish-pr:
     image: woodpeckerci/plugin-docker-buildx:latest
-    environment:
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-        from_secret: meow_weight_tracker_clerk_publishable_key
     settings:
       registry: git.lab
       repo: git.lab/nick-b/meow-weight-tracker
@@ -70,8 +67,12 @@ steps:
       # NEXT_PUBLIC_* env vars are baked into the JS bundle at build time
       # (Next.js standalone trace). build_args_from_env pulls the secret
       # the step's env into the docker build context.
-      build_args_from_env:
-        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+      # Clerk publishable keys are public by design (they identify the
+      # Clerk app from the browser). Pin the homelab build-time value as
+      # a literal — splitting per-env is cheap to do later via separate
+      # publish-* settings if needed.
+      build_args:
+        - "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YnJpZWYtYWtpdGEtNjcuY2xlcmsuYWNjb3VudHMuZGV2JA"
       tags:
         - "pr-${CI_COMMIT_PULL_REQUEST}-${CI_COMMIT_SHA:0:8}"
         - "pr-${CI_COMMIT_PULL_REQUEST}-latest"
@@ -82,9 +83,6 @@ steps:
 
   publish-main:
     image: woodpeckerci/plugin-docker-buildx:latest
-    environment:
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-        from_secret: meow_weight_tracker_clerk_publishable_key
     settings:
       registry: git.lab
       repo: git.lab/nick-b/meow-weight-tracker
@@ -94,8 +92,12 @@ steps:
         from_secret: registry_user
       password:
         from_secret: registry_token
-      build_args_from_env:
-        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+      # Clerk publishable keys are public by design (they identify the
+      # Clerk app from the browser). Pin the homelab build-time value as
+      # a literal — splitting per-env is cheap to do later via separate
+      # publish-* settings if needed.
+      build_args:
+        - "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YnJpZWYtYWtpdGEtNjcuY2xlcmsuYWNjb3VudHMuZGV2JA"
       tags:
         - "main-${CI_COMMIT_SHA:0:8}"
         - "dev-latest"
@@ -107,9 +109,6 @@ steps:
 
   publish-tag:
     image: woodpeckerci/plugin-docker-buildx:latest
-    environment:
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-        from_secret: meow_weight_tracker_clerk_publishable_key
     settings:
       registry: git.lab
       repo: git.lab/nick-b/meow-weight-tracker
@@ -119,8 +118,12 @@ steps:
         from_secret: registry_user
       password:
         from_secret: registry_token
-      build_args_from_env:
-        - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY
+      # Clerk publishable keys are public by design (they identify the
+      # Clerk app from the browser). Pin the homelab build-time value as
+      # a literal — splitting per-env is cheap to do later via separate
+      # publish-* settings if needed.
+      build_args:
+        - "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_YnJpZWYtYWtpdGEtNjcuY2xlcmsuYWNjb3VudHMuZGV2JA"
       tags:
         - "${CI_COMMIT_TAG}"
         - "${CI_COMMIT_SHA:0:8}"
