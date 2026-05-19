@@ -1,0 +1,4 @@
+dev:
+  app: meow-weight-tracker-dev
+prod:
+  app: meow-weight-tracker-prod
