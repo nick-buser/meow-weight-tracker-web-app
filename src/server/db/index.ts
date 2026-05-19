@@ -12,12 +12,13 @@ function parsePgUrl(url: string) {
     /^postgres(?:ql)?:\/\/([^:@]+):([^@]*)@([^:/]+)(?::(\d+))?\/([^?]+)(?:\?.*)?$/,
   );
   if (!m) throw new Error(`Invalid POSTGRES_URL shape: ${url}`);
+  const [, user, pass, host, port, db] = m;
   return {
-    username: decodeURIComponent(m[1]),
-    password: decodeURIComponent(m[2]),
-    host: m[3],
-    port: parseInt(m[4] ?? "5432", 10),
-    database: m[5],
+    username: decodeURIComponent(user!),
+    password: decodeURIComponent(pass!),
+    host: host!,
+    port: parseInt(port ?? "5432", 10),
+    database: db!,
   };
 }
 
