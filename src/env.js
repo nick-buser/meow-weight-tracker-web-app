@@ -7,7 +7,13 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
-    POSTGRES_URL: z.string().url(),
+    // .url() would reject the homelab Postgres URL — its password
+    // (base64 from `openssl rand -base64 24`) often contains `/` which
+    // RFC 3986 disallows in userinfo and Dokploy's env injection layer
+    // can't reliably preserve percent-encoding through. Validation is
+    // done at connection time by scripts/run-migrations.mjs and
+    // src/server/db/index.ts.
+    POSTGRES_URL: z.string().min(1),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
